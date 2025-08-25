@@ -4,12 +4,429 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TO-DO</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* General Body Styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Header Styles */
+        header {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #212529;
+            letter-spacing: 1px;
+            font-weight: 300;
+        }
+        
+        /* User Info Section */
+        .user-info {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #6c757d;
+            background-color: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        /* Main Content Styles */
+        main {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        section {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #495057;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 15px;
+            margin-top: 0;
+            font-weight: 600;
+        }
+
+        /* Input and Button Styles */
+        input[type="text"],
+        input[type="date"],
+        select {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #4c6ef5;
+            box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.2);
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: #4c6ef5;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #3b5bdb;
+            transform: translateY(-1px);
+        }
+
+        /* Deadline Section Styles */
+        .deadline-inputs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        #topic-input { flex-grow: 1; }
+        #deadline-input { width: auto; }
+
+        .quick-add-btns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .quick-add-btns button {
+            background-color: #adb5bd;
+        }
+        .quick-add-btns button:hover {
+            background-color: #939aa1;
+        }
+        #add-deadline-btn {
+            width: 100%;
+        }
+
+        /* Checklist Styles */
+        #checklist-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        #checklist-controls input[type="text"] {
+            flex-grow: 1;
+            width: auto;
+        }
+
+        #subjects-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .subject-column {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .subject-column h3 {
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+            color: #495057;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .subject-column ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        /* List Item Styles (for both deadlines and tasks) */
+        .subject-column li, #deadline-list li {
+            padding: 12px;
+            border-bottom: none;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            background-color: #ffffff;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .subject-column li:hover, #deadline-list li:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .deadline-color-circle {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            cursor: pointer;
+            border: 2px solid rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .deadline-color-circle:hover {
+            transform: scale(1.1);
+        }
+
+        .delete-btn, .delete-subject-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0 5px;
+            transition: color 0.2s ease;
+        }
+
+        .delete-btn {
+            margin-left: auto;
+        }
+
+        .delete-btn:hover, .delete-subject-btn:hover {
+            color: #c0392b;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: #b0b0b0;
+        }
+
+        /* Custom Color Picker Styles */
+        .custom-color-picker {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .color-swatch {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1px solid #eee;
+            transition: transform 0.2s ease;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+
+        /* Calendar Styles */
+        #calendar-container {
+            padding: 15px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header h3 { margin: 0; font-size: 1.5em; font-weight: 600; }
+        .calendar-header button { padding: 8px 12px; }
+
+        .calendar-grid, .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+
+        .calendar-weekdays div { font-weight: bold; padding-bottom: 10px; color: #6c757d; }
+
+        .calendar-grid div {
+            background-color: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            aspect-ratio: 1 / 1;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        /* Date in top-right corner */
+        .calendar-grid div > span.date-number {
+            position: absolute;
+            top: 5px;
+            right: 7px;
+            font-size: 0.85em;
+            font-weight: 500;
+            z-index: 2;
+        }
+
+        /* Task indicators in bottom-left corner */
+        .task-indicators {
+            position: absolute;
+            bottom: 3px;
+            left: 5px;
+            width: auto;
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-start;
+            padding: 0;
+            box-sizing: border-box;
+            gap: 3px;
+            z-index: 1;
+        }
+
+        .task-line {
+            width: 4px;
+            left: 2px;
+            bottom: 8px;
+            height: 15%;
+            border-radius: 2px;
+        }
+
+        /* Task dots in bottom-left corner */
+        .task-dot-container {
+            position: absolute;
+            bottom: 0px;
+            left: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            max-width: 80%;
+            z-index: 1;
+        }
+
+        .task-dot {
+            width: 6px;
+            height: 6px;
+            left: 3px;
+            border-radius: 50%;
+        }
+
+        .calendar-grid .empty-day {
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        /* Border Color Logic */
+        .calendar-grid .current-day {
+            border-color: #4c6ef5;
+        }
+        .calendar-grid .completed-border {
+            border-color: #28a745;
+        }
+        .calendar-grid .missed-border {
+            border-color: #dc3545;
+        }
+
+        .calendar-grid .current-day.completed-border {
+            border-color: #28a745;
+        }
+
+        /* Green tick mark in bottom-right corner */
+        .calendar-grid .has-completed-tasks::after {
+            content: '✔';
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #28a745;
+            z-index: 2;
+        }
+
+        /* Custom Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 101;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-around;
+        }
+    </style>
 </head>
 <body>
     <header>
         <h1>Features</h1>
     </header>
+    
+    <!-- User information section -->
+    <div class="user-info">
+        <span id="user-status">Connecting...</span>
+        <span id="user-id-display"></span>
+    </div>
+
     <main>
         <section id="checklist">
             <h2>Checklist</h2>
@@ -17,11 +434,11 @@
                 <button id="add-subject-btn">Add Subject</button>
                 <input type="text" id="task-input" placeholder="New task...">
                 <select id="subject-select">
-                    </select>
+                </select>
                 <button id="add-task-btn">Add Task</button>
             </div>
             <div id="subjects-container">
-                </div>
+            </div>
         </section>
         <section id="deadlines">
             <h2>Current Tasks</h2>
@@ -37,10 +454,10 @@
             </div>
             <button id="add-deadline-btn">Add Deadline with Date</button>
             <ul id="deadline-list">
-                </ul>
+            </ul>
         </section>
         <section id="regularity">
-            <h2>Calender</h2>
+            <h2>Calendar</h2>
             <div id="calendar-container">
                 <div class="calendar-header">
                     <button id="prev-month-btn">&lt;</button>
@@ -57,13 +474,505 @@
                     <div>Sat</div>
                 </div>
                 <div id="calendar-days" class="calendar-grid">
-                    </div>
+                </div>
             </div>
         </section>
     </main>
     
     <div id="custom-color-picker" class="custom-color-picker"></div>
 
-    <script src="script.js"></script>
+    <!-- Custom Modal for Alerts and Confirms -->
+    <div id="my-modal" class="modal">
+        <div class="modal-content">
+            <p id="modal-text"></p>
+            <input type="text" id="modal-input" style="display:none; width: 100%; margin-top: 10px;">
+            <div class="modal-buttons">
+                <button id="modal-ok-btn" style="display:none;">OK</button>
+                <button id="modal-cancel-btn" style="display:none;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firebase Libraries -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAhLpiJy3IhrG5xvWoo1Vmb3QQC57Aq-34",
+            authDomain: "speedystodobe.firebaseapp.com",
+            projectId: "speedystodobe",
+            storageBucket: "speedystodobe.firebasestorage.app",
+            messagingSenderId: "484792062191",
+            appId: "1:484792062191:web:cfa0de0909a65fe6824b1a",
+            measurementId: "G-K7M50S4KMK"
+        };
+        
+        // Use the global __app_id variable if available
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // --- DOM Elements ---
+        const topicInput = document.getElementById('topic-input');
+        const deadlineInput = document.getElementById('deadline-input');
+        const addDeadlineBtn = document.getElementById('add-deadline-btn');
+        const deadlineList = document.getElementById('deadline-list');
+        const addTodayBtn = document.getElementById('add-today-btn');
+        const addTomorrowBtn = document.getElementById('add-tomorrow-btn');
+        const addWeekBtn = document.getElementById('add-week-btn');
+        const addMonthBtn = document.getElementById('add-month-btn');
+        const customColorPicker = document.getElementById('custom-color-picker');
+        const addSubjectBtn = document.getElementById('add-subject-btn');
+        const taskInput = document.getElementById('task-input');
+        const subjectSelect = document.getElementById('subject-select');
+        const addTaskBtn = document.getElementById('add-task-btn');
+        const subjectsContainer = document.getElementById('subjects-container');
+        const monthYearDisplay = document.getElementById('month-year-display');
+        const calendarDays = document.getElementById('calendar-days');
+        const prevMonthBtn = document.getElementById('prev-month-btn');
+        const nextMonthBtn = document.getElementById('next-month-btn');
+        const userStatusEl = document.getElementById('user-status');
+        const userIdDisplayEl = document.getElementById('user-id-display');
+        const myModal = document.getElementById('my-modal');
+        const modalText = document.getElementById('modal-text');
+        const modalInput = document.getElementById('modal-input');
+        const modalOkBtn = document.getElementById('modal-ok-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+        // --- Predefined Color Palette ---
+        const colorPalette = [
+            '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', 
+            '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff'
+        ];
+
+        // --- Data Initialization ---
+        let deadlines = [];
+        let subjects = [{ name: 'General', tasks: [] }];
+        let completedDates = [];
+        let userId = null;
+
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+
+        // --- Modal Functions ---
+        function showModal(message, type = 'alert', callback) {
+            return new Promise((resolve) => {
+                modalText.textContent = message;
+                modalInput.style.display = 'none';
+                modalOkBtn.style.display = 'none';
+                modalCancelBtn.style.display = 'none';
+
+                if (type === 'prompt') {
+                    modalInput.style.display = 'block';
+                    modalInput.value = '';
+                    modalOkBtn.style.display = 'block';
+                    modalOkBtn.textContent = 'OK';
+                    modalOkBtn.onclick = () => {
+                        myModal.style.display = 'none';
+                        resolve(modalInput.value);
+                    };
+                    modalCancelBtn.style.display = 'block';
+                    modalCancelBtn.onclick = () => {
+                        myModal.style.display = 'none';
+                        resolve(null);
+                    };
+                } else if (type === 'confirm') {
+                    modalOkBtn.style.display = 'block';
+                    modalOkBtn.textContent = 'Yes';
+                    modalOkBtn.onclick = () => {
+                        myModal.style.display = 'none';
+                        resolve(true);
+                    };
+                    modalCancelBtn.style.display = 'block';
+                    modalCancelBtn.onclick = () => {
+                        myModal.style.display = 'none';
+                        resolve(false);
+                    };
+                } else { // alert
+                    modalOkBtn.style.display = 'block';
+                    modalOkBtn.textContent = 'OK';
+                    modalOkBtn.onclick = () => {
+                        myModal.style.display = 'none';
+                        resolve();
+                    };
+                }
+                myModal.style.display = 'flex';
+            });
+        }
+        
+        // --- Firebase Integration ---
+        function saveToFirestore() {
+            if (!userId) return;
+            const userDocRef = doc(db, 'artifacts', appId, 'users', userId, 'data', 'todos');
+            const dataToSave = {
+                deadlines: deadlines,
+                subjects: subjects,
+                completedDates: completedDates,
+            };
+            try {
+                setDoc(userDocRef, dataToSave, { merge: true });
+            } catch (error) {
+                console.error("Error writing document: ", error);
+            }
+        }
+
+        async function initFirebase() {
+            // Sign in anonymously if no user is authenticated
+            try {
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch(e) {
+                console.error("Failed to sign in with custom token, falling back to anonymous sign-in:", e);
+                await signInAnonymously(auth);
+            }
+
+            // Listen for auth state changes
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    userStatusEl.textContent = 'Connected';
+                    userIdDisplayEl.textContent = `User ID: ${userId}`;
+                    console.log("Firebase initialized. User ID:", userId);
+                    
+                    // Set up a real-time listener for the user's data
+                    const userDocRef = doc(db, 'artifacts', appId, 'users', userId, 'data', 'todos');
+                    onSnapshot(userDocRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            deadlines = data.deadlines || [];
+                            subjects = data.subjects || [{ name: 'General', tasks: [] }];
+                            completedDates = data.completedDates || [];
+                            console.log("Data loaded from Firestore:", data);
+                        } else {
+                            console.log("No data found for user, creating a new document.");
+                            // Create an empty document if it doesn't exist
+                            saveToFirestore();
+                        }
+                        renderAll();
+                    }, (error) => {
+                        console.error("Error listening for document changes: ", error);
+                        userStatusEl.textContent = 'Connection Error';
+                    });
+
+                } else {
+                    console.log("Not signed in.");
+                    userStatusEl.textContent = 'Not Signed In';
+                    userIdDisplayEl.textContent = '';
+                }
+            });
+        }
+        
+        // --- Helper Function ---
+        function formatDate(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // --- Color Picker Functions ---
+        function showColorPicker(event, deadlineIndex) {
+            customColorPicker.innerHTML = '';
+            customColorPicker.style.display = 'grid';
+            const rect = event.target.getBoundingClientRect();
+            customColorPicker.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            customColorPicker.style.left = `${rect.left + window.scrollX}px`;
+
+            colorPalette.forEach(color => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                swatch.style.backgroundColor = color;
+                swatch.onclick = () => {
+                    deadlines[deadlineIndex].color = color;
+                    saveToFirestore();
+                    hideColorPicker();
+                };
+                customColorPicker.appendChild(swatch);
+            });
+
+            setTimeout(() => {
+                document.addEventListener('click', hideColorPicker, { once: true });
+            }, 0);
+            event.stopPropagation();
+        }
+
+        function hideColorPicker(event) {
+            if (event && customColorPicker.contains(event.target)) {
+                document.addEventListener('click', hideColorPicker, { once: true });
+                return;
+            }
+            customColorPicker.style.display = 'none';
+        }
+        
+        // --- Deadline Functions ---
+        function renderDeadlines() {
+            deadlineList.innerHTML = '';
+            deadlines.forEach((deadline, index) => {
+                const li = document.createElement('li');
+                const colorCircle = document.createElement('span');
+                colorCircle.className = 'deadline-color-circle';
+                colorCircle.style.backgroundColor = deadline.color;
+                colorCircle.addEventListener('click', (e) => showColorPicker(e, index));
+                li.appendChild(colorCircle);
+
+                const textSpan = document.createElement('span');
+                textSpan.textContent = `${deadline.topic} - ${deadline.date}`;
+                li.appendChild(textSpan);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '✖';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = (e) => { e.stopPropagation(); deleteDeadline(index); };
+                li.appendChild(deleteBtn);
+                deadlineList.appendChild(li);
+            });
+        }
+
+        function createAndAddDeadline(topic, dateString) {
+            if (topic && dateString) {
+                const newColor = colorPalette[deadlines.length % colorPalette.length];
+                deadlines.push({ topic, date: dateString, color: newColor });
+                deadlines.sort((a, b) => new Date(a.date) - new Date(b.date));
+                topicInput.value = '';
+                deadlineInput.value = '';
+                saveToFirestore();
+            } else {
+                showModal('Please provide a topic and select a date.');
+            }
+        }
+
+        function addDeadline() {
+            createAndAddDeadline(topicInput.value.trim(), deadlineInput.value);
+        }
+        
+        function addQuickDeadline(period) {
+            const topic = topicInput.value.trim();
+            if (!topic) {
+                showModal('Please enter a topic first.');
+                return;
+            }
+            const date = new Date();
+            if (period === 'tomorrow') date.setDate(date.getDate() + 1);
+            else if (period === 'week') date.setDate(date.getDate() + 7);
+            else if (period === 'month') date.setMonth(date.getMonth() + 1);
+            createAndAddDeadline(topic, formatDate(date));
+        }
+
+        function deleteDeadline(index) {
+            deadlines.splice(index, 1);
+            saveToFirestore();
+        }
+
+        // --- Subject and Task Functions ---
+        function renderSubjects() {
+            subjectsContainer.innerHTML = '';
+            subjectSelect.innerHTML = '';
+            if (subjects.length === 0) {
+                subjectSelect.innerHTML = '<option disabled>No subjects available</option>';
+                return;
+            }
+            subjects.forEach((subject, subjectIndex) => {
+                const option = document.createElement('option');
+                option.value = subjectIndex;
+                option.textContent = subject.name;
+                subjectSelect.appendChild(option);
+                const column = document.createElement('div');
+                column.className = 'subject-column';
+                const header = document.createElement('h3');
+                const titleSpan = document.createElement('span');
+                titleSpan.textContent = subject.name;
+                header.appendChild(titleSpan);
+                const deleteSubBtn = document.createElement('button');
+                deleteSubBtn.textContent = '🗑️';
+                deleteSubBtn.className = 'delete-subject-btn';
+                deleteSubBtn.title = `Delete ${subject.name} subject`;
+                deleteSubBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const confirmation = await showModal(`Are you sure you want to delete "${subject.name}"?`, 'confirm');
+                    if (confirmation) {
+                        deleteSubject(subjectIndex);
+                    }
+                });
+                header.appendChild(deleteSubBtn);
+                column.appendChild(header);
+                const ul = document.createElement('ul');
+                subject.tasks.forEach((task, taskIndex) => {
+                    const li = document.createElement('li');
+                    if (task.completed) li.classList.add('completed');
+                    const taskText = document.createElement('span');
+                    taskText.textContent = task.text;
+                    li.appendChild(taskText);
+                    li.addEventListener('click', () => toggleTask(subjectIndex, taskIndex));
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = '✖';
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteTask(subjectIndex, taskIndex);
+                    });
+                    li.appendChild(deleteBtn);
+                    ul.appendChild(li);
+                });
+                column.appendChild(ul);
+                subjectsContainer.appendChild(column);
+            });
+        }
+
+        async function addSubject() {
+            const name = await showModal('Enter the new subject name:', 'prompt');
+            if (name && name.trim()) {
+                subjects.push({ name: name.trim(), tasks: [] });
+                saveToFirestore();
+            }
+        }
+        
+        function deleteSubject(subjectIndex) {
+            subjects.splice(subjectIndex, 1);
+            saveToFirestore();
+        }
+
+        function addTask() {
+            const text = taskInput.value.trim();
+            const subjectIndex = subjectSelect.value;
+            if (text && subjectIndex !== null && subjects[subjectIndex]) {
+                subjects[subjectIndex].tasks.push({ text, completed: false });
+                taskInput.value = '';
+                saveToFirestore();
+            }
+        }
+
+        function deleteTask(subjectIndex, taskIndex) {
+            subjects[subjectIndex].tasks.splice(taskIndex, 1);
+            saveToFirestore();
+        }
+
+        function toggleTask(subjectIndex, taskIndex) {
+            const task = subjects[subjectIndex].tasks[taskIndex];
+            task.completed = !task.completed;
+            const todayString = formatDate(new Date());
+            if (task.completed) {
+                if (!completedDates.includes(todayString)) completedDates.push(todayString);
+            } else {
+                const allTasks = subjects.flatMap(s => s.tasks);
+                const anyCompletedToday = allTasks.some(t => t.completed && completedDates.includes(todayString));
+                if (!anyCompletedToday) {
+                    const index = completedDates.indexOf(todayString);
+                    if (index > -1) completedDates.splice(index, 1);
+                }
+            }
+            saveToFirestore();
+        }
+
+        // --- Calendar Functions ---
+        function renderCalendar() {
+            calendarDays.innerHTML = '';
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            monthYearDisplay.textContent = `${new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} ${currentYear}`;
+
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                calendarDays.appendChild(document.createElement('div')).classList.add('empty-day');
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                const dayNumber = document.createElement('span');
+                dayNumber.className = 'date-number';
+                dayNumber.textContent = day;
+                dayCell.appendChild(dayNumber);
+
+                const cellDate = new Date(currentYear, currentMonth, day);
+                cellDate.setHours(0,0,0,0);
+                const today = new Date();
+                today.setHours(0,0,0,0);
+
+                const cellDateString = formatDate(cellDate);
+                const hasCompletedTasks = completedDates.includes(cellDateString);
+
+                if (cellDate.getTime() === today.getTime()) {
+                    dayCell.classList.add('current-day');
+                    if (hasCompletedTasks) dayCell.classList.add('completed-border');
+                } else if (cellDate < today) {
+                    if (hasCompletedTasks) dayCell.classList.add('completed-border');
+                    else dayCell.classList.add('missed-border');
+                } else {
+                    if (hasCompletedTasks) dayCell.classList.add('completed-border');
+                }
+                if (hasCompletedTasks) dayCell.classList.add('has-completed-tasks');
+
+
+                const activeTasks = deadlines.filter(d => {
+                    const deadlineDate = new Date(d.date);
+                    deadlineDate.setHours(23, 59, 59, 999); 
+                    return cellDate >= today && cellDate <= deadlineDate;
+                });
+
+                if (activeTasks.length > 0) {
+                    if (activeTasks.length <= 4) {
+                        const indicators = document.createElement('div');
+                        indicators.className = 'task-indicators';
+                        activeTasks.forEach(task => {
+                            const line = document.createElement('div');
+                            line.className = 'task-line';
+                            line.style.backgroundColor = task.color;
+                            indicators.appendChild(line);
+                        });
+                        dayCell.appendChild(indicators);
+                    } else {
+                        const dotContainer = document.createElement('div');
+                        dotContainer.className = 'task-dot-container';
+                        activeTasks.slice(0, 8).forEach(task => {
+                            const dot = document.createElement('div');
+                            dot.className = 'task-dot';
+                            dot.style.backgroundColor = task.color;
+                            dotContainer.appendChild(dot);
+                        });
+                        dayCell.appendChild(dotContainer);
+                    }
+                }
+                calendarDays.appendChild(dayCell);
+            }
+        }
+
+        function changeMonth(offset) {
+            currentMonth += offset;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; } 
+            else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            renderAll();
+        }
+
+        function renderAll() {
+            renderDeadlines();
+            renderSubjects();
+            renderCalendar();
+        }
+
+        // --- Event Listeners ---
+        addDeadlineBtn.addEventListener('click', addDeadline);
+        addTodayBtn.addEventListener('click', () => addQuickDeadline('today'));
+        addTomorrowBtn.addEventListener('click', () => addQuickDeadline('tomorrow'));
+        addWeekBtn.addEventListener('click', () => addQuickDeadline('week'));
+        addMonthBtn.addEventListener('click', () => addQuickDeadline('month'));
+        addSubjectBtn.addEventListener('click', addSubject);
+        addTaskBtn.addEventListener('click', addTask);
+        prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+        nextMonthBtn.addEventListener('click', () => changeMonth(1));
+
+        // --- Initial Call ---
+        window.onload = () => {
+          initFirebase();
+        }
+    </script>
 </body>
 </html>
