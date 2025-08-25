@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TO-DO by HkM</title>
+    <title>TO-DO with FirebaAuth</title>
     <style>
         /* General Body Styles */
         body {
@@ -173,32 +173,9 @@
             background-size: .65em auto;
             min-width: 150px;
         }
-
-        /* --- Subject Recommendations Styling --- */
-        #subject-recommendations-container {
-            display: none; /* Hidden by default */
-            width: 100%;
-            padding: 10px 0;
-            border-top: 1px solid #e9ecef;
-            margin-top: 15px;
-        }
-        #subject-recommendations-container span {
-            font-weight: 500;
-            color: #6c757d;
-            margin-right: 10px;
-            display: block;
-            margin-bottom: 10px;
-        }
-        .recommendation-btn {
-            background-color: #e9ecef;
-            color: #495057;
-            padding: 8px 12px;
-            font-size: 14px;
-            margin: 0 5px 5px 0;
-            cursor: pointer;
-        }
-        .recommendation-btn:hover {
-            background-color: #dee2e6;
+        #subject-select optgroup {
+            font-weight: bold;
+            font-style: italic;
         }
 
         button {
@@ -290,7 +267,6 @@
                     <select id="subject-select"></select>
                     <button id="add-task-btn">Add Task</button>
                 </div>
-                <div id="subject-recommendations-container"></div>
                 <div id="subjects-container"></div>
             </section>
             <section id="deadlines"><h2>Current Tasks</h2><div class="deadline-inputs"><input type="text" id="topic-input" placeholder="Add new topic"><input type="date" id="deadline-input"></div><div class="quick-add-btns"><button id="add-today-btn">Today</button><button id="add-tomorrow-btn">Tomorrow</button><button id="add-week-btn">Next Week</button><button id="add-month-btn">Next Month</button></div><button id="add-deadline-btn">Add Deadline with Date</button><ul id="deadline-list"></ul></section>
@@ -385,7 +361,6 @@
             const calendarDays = document.getElementById('calendar-days');
             const prevMonthBtn = document.getElementById('prev-month-btn');
             const nextMonthBtn = document.getElementById('next-month-btn');
-            const subjectRecommendationsContainer = document.getElementById('subject-recommendations-container');
 
             const colorPalette = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff'];
             const recommendedSubjects = ['Physics', 'Chemistry', 'Biology', 'Mathematics', 'Computer Science'];
@@ -399,11 +374,11 @@
                 if (doc.exists) {
                     const data = doc.data();
                     deadlines = data.deadlines || [];
-                    subjects = data.subjects || []; // No more "General" subject
+                    subjects = data.subjects || [];
                     completedDates = data.completedDates || [];
                 } else {
                     console.log("No data found, creating new user document.");
-                    subjects = []; // Start with an empty array for new users
+                    subjects = [];
                     save(); 
                 }
                 renderAll(); 
@@ -489,76 +464,94 @@
             function deleteDeadline(index) { deadlines.splice(index, 1); save(); }
 
             function renderSubjects() {
+                const previouslySelected = subjectSelect.value;
                 subjectsContainer.innerHTML = ''; 
                 subjectSelect.innerHTML = '';
 
                 if (!subjects || subjects.length === 0) {
-                    subjectSelect.style.display = 'none';
                     taskInput.style.display = 'none';
                     addTaskBtn.style.display = 'none';
-                    
-                    subjectRecommendationsContainer.style.display = 'block';
-                    subjectRecommendationsContainer.innerHTML = '<span>Recommended Subjects:</span>';
-                    
-                    recommendedSubjects.forEach(name => {
-                        const recBtn = document.createElement('button');
-                        recBtn.textContent = name;
-                        recBtn.className = 'recommendation-btn';
-                        recBtn.onclick = () => addSubject(name);
-                        subjectRecommendationsContainer.appendChild(recBtn);
-                    });
-
+                    const placeholder = document.createElement('option');
+                    placeholder.textContent = 'Add a subject to begin';
+                    placeholder.disabled = true;
+                    placeholder.selected = true;
+                    subjectSelect.appendChild(placeholder);
                 } else {
-                    subjectSelect.style.display = 'block';
                     taskInput.style.display = 'block';
                     addTaskBtn.style.display = 'block';
-                    subjectRecommendationsContainer.style.display = 'none';
-
                     subjects.forEach((subject, subjectIndex) => {
                         const option = document.createElement('option');
                         option.value = subjectIndex; option.textContent = subject.name;
                         subjectSelect.appendChild(option);
-                        const column = document.createElement('div');
-                        column.className = 'subject-column';
-                        const header = document.createElement('h3');
-                        const titleSpan = document.createElement('span');
-                        titleSpan.textContent = subject.name;
-                        header.appendChild(titleSpan);
-                        const deleteSubBtn = document.createElement('button');
-                        deleteSubBtn.textContent = '🗑️'; deleteSubBtn.className = 'delete-subject-btn';
-                        deleteSubBtn.title = `Delete ${subject.name}`;
-                        deleteSubBtn.onclick = (e) => { e.stopPropagation(); if (confirm(`Delete "${subject.name}"?`)) { deleteSubject(subjectIndex); } };
-                        header.appendChild(deleteSubBtn);
-                        column.appendChild(header);
-                        const ul = document.createElement('ul');
-                        if (subject.tasks) {
-                            subject.tasks.forEach((task, taskIndex) => {
-                                const li = document.createElement('li');
-                                if (task.completed) li.classList.add('completed');
-                                const taskText = document.createElement('span');
-                                taskText.textContent = task.text;
-                                li.appendChild(taskText);
-                                li.onclick = () => toggleTask(subjectIndex, taskIndex);
-                                const deleteBtn = document.createElement('button');
-                                deleteBtn.textContent = '✖'; deleteBtn.className = 'delete-btn';
-                                deleteBtn.onclick = (e) => { e.stopPropagation(); deleteTask(subjectIndex, taskIndex); };
-                                li.appendChild(deleteBtn);
-                                ul.appendChild(li);
-                            });
-                        }
-                        column.appendChild(ul); subjectsContainer.appendChild(column);
                     });
                 }
+                
+                // --- Always add recommendations ---
+                const separator = document.createElement('option');
+                separator.disabled = true;
+                separator.textContent = '──────────';
+                subjectSelect.appendChild(separator);
+
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = 'Add Recommended';
+                const userSubjectNames = subjects.map(s => s.name.toLowerCase());
+                recommendedSubjects.forEach(name => {
+                    if (!userSubjectNames.includes(name.toLowerCase())) {
+                        const option = document.createElement('option');
+                        option.value = `rec-${name}`;
+                        option.textContent = name;
+                        optgroup.appendChild(option);
+                    }
+                });
+
+                if (optgroup.hasChildNodes()) {
+                    subjectSelect.appendChild(optgroup);
+                }
+                
+                subjectSelect.value = previouslySelected;
+
+                // Render the subject columns below
+                subjects.forEach((subject, subjectIndex) => {
+                    const column = document.createElement('div');
+                    column.className = 'subject-column';
+                    const header = document.createElement('h3');
+                    const titleSpan = document.createElement('span');
+                    titleSpan.textContent = subject.name;
+                    header.appendChild(titleSpan);
+                    const deleteSubBtn = document.createElement('button');
+                    deleteSubBtn.textContent = '🗑️'; deleteSubBtn.className = 'delete-subject-btn';
+                    deleteSubBtn.title = `Delete ${subject.name}`;
+                    deleteSubBtn.onclick = (e) => { e.stopPropagation(); if (confirm(`Delete "${subject.name}"?`)) { deleteSubject(subjectIndex); } };
+                    header.appendChild(deleteSubBtn);
+                    column.appendChild(header);
+                    const ul = document.createElement('ul');
+                    if (subject.tasks) {
+                        subject.tasks.forEach((task, taskIndex) => {
+                            const li = document.createElement('li');
+                            if (task.completed) li.classList.add('completed');
+                            const taskText = document.createElement('span');
+                            taskText.textContent = task.text;
+                            li.appendChild(taskText);
+                            li.onclick = () => toggleTask(subjectIndex, taskIndex);
+                            const deleteBtn = document.createElement('button');
+                            deleteBtn.textContent = '✖'; deleteBtn.className = 'delete-btn';
+                            deleteBtn.onclick = (e) => { e.stopPropagation(); deleteTask(subjectIndex, taskIndex); };
+                            li.appendChild(deleteBtn);
+                            ul.appendChild(li);
+                        });
+                    }
+                    column.appendChild(ul); subjectsContainer.appendChild(column);
+                });
             }
 
-            function addSubject(name) {
-                const subjectName = typeof name === 'string' ? name.trim() : prompt('Enter the new subject name:');
-                if (subjectName) {
-                    const subjectExists = subjects.some(s => s.name.toLowerCase() === subjectName.toLowerCase());
+            function addSubject() {
+                const subjectName = prompt('Enter the new subject name:');
+                if (subjectName && subjectName.trim()) {
+                    const subjectExists = subjects.some(s => s.name.toLowerCase() === subjectName.trim().toLowerCase());
                     if (!subjectExists) {
-                        subjects.push({ name: subjectName, tasks: [] });
+                        subjects.push({ name: subjectName.trim(), tasks: [] });
                         save();
-                    } else if (typeof name !== 'string') {
+                    } else {
                         alert('A subject with this name already exists.');
                     }
                 }
@@ -573,6 +566,8 @@
                     subjects[subjectIndex].tasks.push({ text, completed: false });
                     taskInput.value = '';
                     save();
+                } else if (!subjects || subjects.length === 0) {
+                    alert("Please add a subject before adding a task.");
                 }
             }
 
@@ -632,12 +627,24 @@
             function renderAll() { renderDeadlines(); renderSubjects(); renderCalendar(); }
 
             // --- Event Listeners ---
+            subjectSelect.addEventListener('change', () => {
+                const selectedValue = subjectSelect.value;
+                if (typeof selectedValue === 'string' && selectedValue.startsWith('rec-')) {
+                    const subjectName = selectedValue.substring(4);
+                    const subjectExists = subjects.some(s => s.name.toLowerCase() === subjectName.toLowerCase());
+                    if (!subjectExists) {
+                        subjects.push({ name: subjectName, tasks: [] });
+                        save(); // This triggers the snapshot listener which will re-render everything
+                    }
+                }
+            });
+
             addDeadlineBtn.addEventListener('click', addDeadline);
             addTodayBtn.addEventListener('click', () => addQuickDeadline('today'));
             addTomorrowBtn.addEventListener('click', () => addQuickDeadline('tomorrow'));
             addWeekBtn.addEventListener('click', () => addQuickDeadline('week'));
             addMonthBtn.addEventListener('click', () => addQuickDeadline('month'));
-            addSubjectBtn.addEventListener('click', () => addSubject()); // Call without args to trigger prompt
+            addSubjectBtn.addEventListener('click', addSubject);
             addTaskBtn.addEventListener('click', addTask);
             prevMonthBtn.addEventListener('click', () => changeMonth(-1));
             nextMonthBtn.addEventListener('click', () => changeMonth(1));
