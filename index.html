@@ -8,7 +8,7 @@
         /* General Body Styles */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f8f9fa; /* Lighter, more modern background */
             color: #343a40;
             line-height: 1.6;
             margin: 0;
@@ -31,7 +31,7 @@
             letter-spacing: 1px;
             font-weight: 300;
         }
-        
+
         /* User Info Section */
         .user-info {
             width: 100%;
@@ -55,10 +55,10 @@
 
         section {
             background-color: #ffffff;
-            border-radius: 12px;
+            border-radius: 12px; /* Softer, more aesthetic corners */
             padding: 25px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Softer, more pleasing shadow */
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
@@ -510,11 +510,12 @@
             measurementId: "G-K7M50S4KMK"
         };
         
-        // Use the global __app_id variable if available
+        // Use the global __app_id and __firebase_config variables if available
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfigFromEnv = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
+        const app = initializeApp(firebaseConfigFromEnv);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
