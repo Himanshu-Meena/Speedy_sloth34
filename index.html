@@ -161,6 +161,46 @@
             box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.2);
         }
 
+        /* --- Custom Select Dropdown Styling --- */
+        #subject-select {
+            background-color: #fff;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236c757d%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: .65em auto;
+            min-width: 150px;
+        }
+
+        /* --- Subject Recommendations Styling --- */
+        #subject-recommendations-container {
+            display: none; /* Hidden by default */
+            width: 100%;
+            padding: 10px 0;
+            border-top: 1px solid #e9ecef;
+            margin-top: 15px;
+        }
+        #subject-recommendations-container span {
+            font-weight: 500;
+            color: #6c757d;
+            margin-right: 10px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .recommendation-btn {
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 8px 12px;
+            font-size: 14px;
+            margin: 0 5px 5px 0;
+            cursor: pointer;
+        }
+        .recommendation-btn:hover {
+            background-color: #dee2e6;
+        }
+
         button {
             padding: 12px 20px;
             border: none;
@@ -187,7 +227,7 @@
         .quick-add-btns button:hover { background-color: #939aa1; }
         #add-deadline-btn { width: 100%; }
 
-        #checklist-controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        #checklist-controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
         #checklist-controls input[type="text"] { flex-grow: 1; min-width: 150px; }
 
         #subjects-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
@@ -242,7 +282,17 @@
     <div id="app-container">
         <header><h1>My Study Tracker</h1><button id="logout-btn">Logout</button></header>
         <main>
-            <section id="checklist"><h2>Checklist</h2><div id="checklist-controls"><button id="add-subject-btn">Add Subject</button><input type="text" id="task-input" placeholder="New task..."><select id="subject-select"></select><button id="add-task-btn">Add Task</button></div><div id="subjects-container"></div></section>
+            <section id="checklist">
+                <h2>Checklist</h2>
+                <div id="checklist-controls">
+                    <button id="add-subject-btn">Add Subject</button>
+                    <input type="text" id="task-input" placeholder="New task...">
+                    <select id="subject-select"></select>
+                    <button id="add-task-btn">Add Task</button>
+                </div>
+                <div id="subject-recommendations-container"></div>
+                <div id="subjects-container"></div>
+            </section>
             <section id="deadlines"><h2>Current Tasks</h2><div class="deadline-inputs"><input type="text" id="topic-input" placeholder="Add new topic"><input type="date" id="deadline-input"></div><div class="quick-add-btns"><button id="add-today-btn">Today</button><button id="add-tomorrow-btn">Tomorrow</button><button id="add-week-btn">Next Week</button><button id="add-month-btn">Next Month</button></div><button id="add-deadline-btn">Add Deadline with Date</button><ul id="deadline-list"></ul></section>
             <section id="regularity"><h2>Calendar</h2><div id="calendar-container"><div class="calendar-header"><button id="prev-month-btn">&lt;</button><h3 id="month-year-display"></h3><button id="next-month-btn">&gt;</button></div><div class="calendar-weekdays"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div><div id="calendar-days" class="calendar-grid"></div></div></section>
         </main>
@@ -335,28 +385,28 @@
             const calendarDays = document.getElementById('calendar-days');
             const prevMonthBtn = document.getElementById('prev-month-btn');
             const nextMonthBtn = document.getElementById('next-month-btn');
+            const subjectRecommendationsContainer = document.getElementById('subject-recommendations-container');
 
             const colorPalette = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff'];
+            const recommendedSubjects = ['Physics', 'Chemistry', 'Biology', 'Mathematics', 'Computer Science'];
             
             let deadlines = [], subjects = [], completedDates = [];
             
             const userDocRef = db.collection('users').doc(user.uid);
 
-            // This listener is the core of the app. It gets data from Firestore
-            // and automatically re-runs whenever the data changes in the database.
             unsubscribe = userDocRef.onSnapshot(doc => {
                 console.log("Received data from Firestore.");
                 if (doc.exists) {
                     const data = doc.data();
                     deadlines = data.deadlines || [];
-                    subjects = data.subjects || [{ name: 'General', tasks: [] }];
+                    subjects = data.subjects || []; // No more "General" subject
                     completedDates = data.completedDates || [];
                 } else {
                     console.log("No data found, creating new user document.");
-                    subjects = [{ name: 'General', tasks: [] }];
-                    save(); // Save the initial state for a new user
+                    subjects = []; // Start with an empty array for new users
+                    save(); 
                 }
-                renderAll(); // Re-render the entire UI with the latest data
+                renderAll(); 
             }, error => {
                 console.error("Firestore listener error: ", error);
                 alert("Error connecting to the database. Please check your Firestore security rules and internet connection.");
@@ -364,9 +414,7 @@
 
             let currentDate = new Date(), currentMonth = currentDate.getMonth(), currentYear = currentDate.getFullYear();
 
-            // --- Save Function (writes the current state to Firestore) ---
             function save() {
-                // This replaces localStorage.setItem
                 userDocRef.set({
                     deadlines: deadlines,
                     subjects: subjects,
@@ -441,45 +489,80 @@
             function deleteDeadline(index) { deadlines.splice(index, 1); save(); }
 
             function renderSubjects() {
-                subjectsContainer.innerHTML = ''; subjectSelect.innerHTML = '';
-                if (!subjects || subjects.length === 0) { subjectSelect.innerHTML = '<option disabled>No subjects</option>'; return; }
-                subjects.forEach((subject, subjectIndex) => {
-                    const option = document.createElement('option');
-                    option.value = subjectIndex; option.textContent = subject.name;
-                    subjectSelect.appendChild(option);
-                    const column = document.createElement('div');
-                    column.className = 'subject-column';
-                    const header = document.createElement('h3');
-                    const titleSpan = document.createElement('span');
-                    titleSpan.textContent = subject.name;
-                    header.appendChild(titleSpan);
-                    const deleteSubBtn = document.createElement('button');
-                    deleteSubBtn.textContent = '🗑️'; deleteSubBtn.className = 'delete-subject-btn';
-                    deleteSubBtn.title = `Delete ${subject.name}`;
-                    deleteSubBtn.onclick = (e) => { e.stopPropagation(); if (confirm(`Delete "${subject.name}"?`)) { deleteSubject(subjectIndex); } };
-                    header.appendChild(deleteSubBtn);
-                    column.appendChild(header);
-                    const ul = document.createElement('ul');
-                    if (subject.tasks) {
-                        subject.tasks.forEach((task, taskIndex) => {
-                            const li = document.createElement('li');
-                            if (task.completed) li.classList.add('completed');
-                            const taskText = document.createElement('span');
-                            taskText.textContent = task.text;
-                            li.appendChild(taskText);
-                            li.onclick = () => toggleTask(subjectIndex, taskIndex);
-                            const deleteBtn = document.createElement('button');
-                            deleteBtn.textContent = '✖'; deleteBtn.className = 'delete-btn';
-                            deleteBtn.onclick = (e) => { e.stopPropagation(); deleteTask(subjectIndex, taskIndex); };
-                            li.appendChild(deleteBtn);
-                            ul.appendChild(li);
-                        });
-                    }
-                    column.appendChild(ul); subjectsContainer.appendChild(column);
-                });
+                subjectsContainer.innerHTML = ''; 
+                subjectSelect.innerHTML = '';
+
+                if (!subjects || subjects.length === 0) {
+                    subjectSelect.style.display = 'none';
+                    taskInput.style.display = 'none';
+                    addTaskBtn.style.display = 'none';
+                    
+                    subjectRecommendationsContainer.style.display = 'block';
+                    subjectRecommendationsContainer.innerHTML = '<span>Recommended Subjects:</span>';
+                    
+                    recommendedSubjects.forEach(name => {
+                        const recBtn = document.createElement('button');
+                        recBtn.textContent = name;
+                        recBtn.className = 'recommendation-btn';
+                        recBtn.onclick = () => addSubject(name);
+                        subjectRecommendationsContainer.appendChild(recBtn);
+                    });
+
+                } else {
+                    subjectSelect.style.display = 'block';
+                    taskInput.style.display = 'block';
+                    addTaskBtn.style.display = 'block';
+                    subjectRecommendationsContainer.style.display = 'none';
+
+                    subjects.forEach((subject, subjectIndex) => {
+                        const option = document.createElement('option');
+                        option.value = subjectIndex; option.textContent = subject.name;
+                        subjectSelect.appendChild(option);
+                        const column = document.createElement('div');
+                        column.className = 'subject-column';
+                        const header = document.createElement('h3');
+                        const titleSpan = document.createElement('span');
+                        titleSpan.textContent = subject.name;
+                        header.appendChild(titleSpan);
+                        const deleteSubBtn = document.createElement('button');
+                        deleteSubBtn.textContent = '🗑️'; deleteSubBtn.className = 'delete-subject-btn';
+                        deleteSubBtn.title = `Delete ${subject.name}`;
+                        deleteSubBtn.onclick = (e) => { e.stopPropagation(); if (confirm(`Delete "${subject.name}"?`)) { deleteSubject(subjectIndex); } };
+                        header.appendChild(deleteSubBtn);
+                        column.appendChild(header);
+                        const ul = document.createElement('ul');
+                        if (subject.tasks) {
+                            subject.tasks.forEach((task, taskIndex) => {
+                                const li = document.createElement('li');
+                                if (task.completed) li.classList.add('completed');
+                                const taskText = document.createElement('span');
+                                taskText.textContent = task.text;
+                                li.appendChild(taskText);
+                                li.onclick = () => toggleTask(subjectIndex, taskIndex);
+                                const deleteBtn = document.createElement('button');
+                                deleteBtn.textContent = '✖'; deleteBtn.className = 'delete-btn';
+                                deleteBtn.onclick = (e) => { e.stopPropagation(); deleteTask(subjectIndex, taskIndex); };
+                                li.appendChild(deleteBtn);
+                                ul.appendChild(li);
+                            });
+                        }
+                        column.appendChild(ul); subjectsContainer.appendChild(column);
+                    });
+                }
             }
 
-            function addSubject() { const name = prompt('Enter the new subject name:'); if (name && name.trim()) { subjects.push({ name: name.trim(), tasks: [] }); save(); } }
+            function addSubject(name) {
+                const subjectName = typeof name === 'string' ? name.trim() : prompt('Enter the new subject name:');
+                if (subjectName) {
+                    const subjectExists = subjects.some(s => s.name.toLowerCase() === subjectName.toLowerCase());
+                    if (!subjectExists) {
+                        subjects.push({ name: subjectName, tasks: [] });
+                        save();
+                    } else if (typeof name !== 'string') {
+                        alert('A subject with this name already exists.');
+                    }
+                }
+            }
             function deleteSubject(subjectIndex) { subjects.splice(subjectIndex, 1); save(); }
 
             function addTask() {
@@ -502,24 +585,6 @@
                 if (task.completed) {
                     if (!completedDates.includes(todayString)) completedDates.push(todayString);
                 } else {
-                    const allTasks = subjects.flatMap(s => s.tasks || []);
-                    const anyCompletedToday = allTasks.some(t => t.completed);
-                    const todayTasksCompleted = allTasks.filter(t => t.completed).length > 0;
-
-                    // This logic needs to be more specific. Let's check if there are ANY other completed tasks today.
-                    let isAnyOtherTaskCompletedToday = false;
-                    subjects.forEach(s => {
-                        (s.tasks || []).forEach(t => {
-                            if (t.completed) {
-                                // This check is tricky without storing completion dates per task.
-                                // For now, we assume if any task is completed, we keep the green check.
-                                // A more robust system would store completion dates.
-                                isAnyOtherTaskCompletedToday = true;
-                            }
-                        });
-                    });
-                    
-                    // A simpler approach: only remove the date if NO tasks are completed.
                     const allTasksNow = subjects.flatMap(s => s.tasks || []);
                     if (!allTasksNow.some(t => t.completed)) {
                          const index = completedDates.indexOf(todayString);
@@ -572,7 +637,7 @@
             addTomorrowBtn.addEventListener('click', () => addQuickDeadline('tomorrow'));
             addWeekBtn.addEventListener('click', () => addQuickDeadline('week'));
             addMonthBtn.addEventListener('click', () => addQuickDeadline('month'));
-            addSubjectBtn.addEventListener('click', addSubject);
+            addSubjectBtn.addEventListener('click', () => addSubject()); // Call without args to trigger prompt
             addTaskBtn.addEventListener('click', addTask);
             prevMonthBtn.addEventListener('click', () => changeMonth(-1));
             nextMonthBtn.addEventListener('click', () => changeMonth(1));
