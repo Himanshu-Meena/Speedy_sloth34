@@ -90,11 +90,11 @@
         #app-container {
             display: none; /* Initially hidden */
             width: 100%;
+            max-width: 800px; /* Set max-width for the main app container */
         }
 
         header {
             width: 100%;
-            max-width: 800px;
             text-align: center;
             margin-bottom: 20px;
             display: flex;
@@ -118,7 +118,6 @@
 
         main {
             width: 100%;
-            max-width: 800px;
         }
 
         section {
@@ -179,8 +178,8 @@
             transform: translateY(-1px);
         }
 
-        .deadline-inputs { display: flex; gap: 10px; margin-bottom: 15px; }
-        #topic-input { flex-grow: 1; }
+        .deadline-inputs { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        #topic-input { flex-grow: 1; min-width: 200px; }
         #deadline-input { width: auto; }
 
         .quick-add-btns { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 15px; }
@@ -189,12 +188,12 @@
         #add-deadline-btn { width: 100%; }
 
         #checklist-controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        #checklist-controls input[type="text"] { flex-grow: 1; width: auto; }
+        #checklist-controls input[type="text"] { flex-grow: 1; min-width: 150px; }
 
         #subjects-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .subject-column { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 12px; padding: 20px; }
         .subject-column h3 { margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #dee2e6; color: #495057; display: flex; justify-content: space-between; align-items: center; font-weight: 500; }
-        .subject-column ul { list-style: none; padding: 0; }
+        .subject-column ul { list-style: none; padding: 0; margin: 0; }
         .subject-column li, #deadline-list li { padding: 12px; border-bottom: none; display: flex; justify-content: flex-start; align-items: center; gap: 12px; cursor: pointer; background-color: #ffffff; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .subject-column li:hover, #deadline-list li:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 
@@ -234,81 +233,18 @@
 
     <!-- Authentication Section -->
     <div id="auth-container">
-        <!-- Login Form -->
-        <form id="login-form" class="auth-form">
-            <h2>Login</h2>
-            <input type="email" id="login-email" placeholder="Email" required>
-            <input type="password" id="login-password" placeholder="Password" required>
-            <button type="submit">Login</button>
-            <p id="auth-error"></p>
-            <a class="form-switch-link" id="show-signup">Don't have an account? Sign Up</a>
-            <a class="forgot-password-link" id="show-forgot-password">Forgot Password?</a>
-        </form>
-
-        <!-- Signup Form -->
-        <form id="signup-form" class="auth-form">
-            <h2>Sign Up</h2>
-            <input type="email" id="signup-email" placeholder="Email" required>
-            <input type="password" id="signup-password" placeholder="Password" required>
-            <button type="submit">Sign Up</button>
-            <a class="form-switch-link" id="show-login">Already have an account? Login</a>
-        </form>
-        
-        <!-- Forgot Password Form -->
-        <form id="forgot-password-form" class="auth-form">
-            <h2>Reset Password</h2>
-            <input type="email" id="reset-email" placeholder="Enter your email" required>
-            <button type="submit">Send Reset Link</button>
-            <a class="form-switch-link" id="back-to-login">Back to Login</a>
-        </form>
+        <form id="login-form" class="auth-form"><h2>Login</h2><input type="email" id="login-email" placeholder="Email" required><input type="password" id="login-password" placeholder="Password" required><button type="submit">Login</button><p id="auth-error"></p><a class="form-switch-link" id="show-signup">Don't have an account? Sign Up</a><a class="forgot-password-link" id="show-forgot-password">Forgot Password?</a></form>
+        <form id="signup-form" class="auth-form"><h2>Sign Up</h2><input type="email" id="signup-email" placeholder="Email" required><input type="password" id="signup-password" placeholder="Password" required><button type="submit">Sign Up</button><a class="form-switch-link" id="show-login">Already have an account? Login</a></form>
+        <form id="forgot-password-form" class="auth-form"><h2>Reset Password</h2><input type="email" id="reset-email" placeholder="Enter your email" required><button type="submit">Send Reset Link</button><a class="form-switch-link" id="back-to-login">Back to Login</a></form>
     </div>
 
     <!-- Main App Content (Initially Hidden) -->
     <div id="app-container">
-        <header>
-            <h1>My Study Tracker</h1>
-            <button id="logout-btn">Logout</button>
-        </header>
+        <header><h1>My Study Tracker</h1><button id="logout-btn">Logout</button></header>
         <main>
-            <section id="checklist">
-                <h2>Checklist</h2>
-                <div id="checklist-controls">
-                    <button id="add-subject-btn">Add Subject</button>
-                    <input type="text" id="task-input" placeholder="New task...">
-                    <select id="subject-select"></select>
-                    <button id="add-task-btn">Add Task</button>
-                </div>
-                <div id="subjects-container"></div>
-            </section>
-            <section id="deadlines">
-                <h2>Current Tasks</h2>
-                <div class="deadline-inputs">
-                    <input type="text" id="topic-input" placeholder="Add new topic">
-                    <input type="date" id="deadline-input">
-                </div>
-                <div class="quick-add-btns">
-                    <button id="add-today-btn">Today</button>
-                    <button id="add-tomorrow-btn">Tomorrow</button>
-                    <button id="add-week-btn">Next Week</button>
-                    <button id="add-month-btn">Next Month</button>
-                </div>
-                <button id="add-deadline-btn">Add Deadline with Date</button>
-                <ul id="deadline-list"></ul>
-            </section>
-            <section id="regularity">
-                <h2>Calendar</h2>
-                <div id="calendar-container">
-                    <div class="calendar-header">
-                        <button id="prev-month-btn">&lt;</button>
-                        <h3 id="month-year-display"></h3>
-                        <button id="next-month-btn">&gt;</button>
-                    </div>
-                    <div class="calendar-weekdays">
-                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-                    </div>
-                    <div id="calendar-days" class="calendar-grid"></div>
-                </div>
-            </section>
+            <section id="checklist"><h2>Checklist</h2><div id="checklist-controls"><button id="add-subject-btn">Add Subject</button><input type="text" id="task-input" placeholder="New task..."><select id="subject-select"></select><button id="add-task-btn">Add Task</button></div><div id="subjects-container"></div></section>
+            <section id="deadlines"><h2>Current Tasks</h2><div class="deadline-inputs"><input type="text" id="topic-input" placeholder="Add new topic"><input type="date" id="deadline-input"></div><div class="quick-add-btns"><button id="add-today-btn">Today</button><button id="add-tomorrow-btn">Tomorrow</button><button id="add-week-btn">Next Week</button><button id="add-month-btn">Next Month</button></div><button id="add-deadline-btn">Add Deadline with Date</button><ul id="deadline-list"></ul></section>
+            <section id="regularity"><h2>Calendar</h2><div id="calendar-container"><div class="calendar-header"><button id="prev-month-btn">&lt;</button><h3 id="month-year-display"></h3><button id="next-month-btn">&gt;</button></div><div class="calendar-weekdays"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div><div id="calendar-days" class="calendar-grid"></div></div></section>
         </main>
     </div>
     
@@ -346,104 +282,39 @@
         const logoutBtn = document.getElementById('logout-btn');
 
         // --- Form Switching Logic ---
-        document.getElementById('show-signup').addEventListener('click', () => {
-            loginForm.style.display = 'none';
-            forgotPasswordForm.style.display = 'none';
-            signupForm.style.display = 'block';
-            authError.textContent = '';
-        });
-        document.getElementById('show-login').addEventListener('click', () => {
-            signupForm.style.display = 'none';
-            loginForm.style.display = 'block';
-            authError.textContent = '';
-        });
-        document.getElementById('show-forgot-password').addEventListener('click', () => {
-            loginForm.style.display = 'none';
-            forgotPasswordForm.style.display = 'block';
-            authError.textContent = '';
-        });
-        document.getElementById('back-to-login').addEventListener('click', () => {
-            forgotPasswordForm.style.display = 'none';
-            loginForm.style.display = 'block';
-            authError.textContent = '';
-        });
+        document.getElementById('show-signup').addEventListener('click', () => { loginForm.style.display = 'none'; forgotPasswordForm.style.display = 'none'; signupForm.style.display = 'block'; authError.textContent = ''; });
+        document.getElementById('show-login').addEventListener('click', () => { signupForm.style.display = 'none'; loginForm.style.display = 'block'; authError.textContent = ''; });
+        document.getElementById('show-forgot-password').addEventListener('click', () => { loginForm.style.display = 'none'; forgotPasswordForm.style.display = 'block'; authError.textContent = ''; });
+        document.getElementById('back-to-login').addEventListener('click', () => { forgotPasswordForm.style.display = 'none'; loginForm.style.display = 'block'; authError.textContent = ''; });
 
         // --- Authentication Logic ---
-
-        // Sign Up
-        signupForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(userCredential => {
-                    console.log('User signed up:', userCredential.user);
-                    // The onAuthStateChanged listener will handle showing the app
-                })
-                .catch(error => {
-                    authError.textContent = error.message;
-                });
-        });
-
-        // Login
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            auth.signInWithEmailAndPassword(email, password)
-                .then(userCredential => {
-                    console.log('User logged in:', userCredential.user);
-                    // The onAuthStateChanged listener will handle showing the app
-                })
-                .catch(error => {
-                    authError.textContent = error.message;
-                });
-        });
+        signupForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value; auth.createUserWithEmailAndPassword(email, password).catch(error => { authError.textContent = error.message; }); });
+        loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; auth.signInWithEmailAndPassword(email, password).catch(error => { authError.textContent = error.message; }); });
+        forgotPasswordForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('reset-email').value; auth.sendPasswordResetEmail(email).then(() => { alert('Password reset email sent!'); forgotPasswordForm.style.display = 'none'; loginForm.style.display = 'block'; authError.textContent = ''; }).catch(error => { authError.textContent = error.message; }); });
+        logoutBtn.addEventListener('click', () => { auth.signOut(); });
         
-        // Forgot Password
-        forgotPasswordForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('reset-email').value;
-            auth.sendPasswordResetEmail(email)
-                .then(() => {
-                    alert('Password reset email sent! Check your inbox.');
-                    forgotPasswordForm.style.display = 'none';
-                    loginForm.style.display = 'block';
-                    authError.textContent = '';
-                })
-                .catch(error => {
-                    authError.textContent = error.message;
-                });
-        });
+        let unsubscribe; // To detach the Firestore listener when logging out
 
-        // Logout
-        logoutBtn.addEventListener('click', () => {
-            auth.signOut().then(() => {
-                console.log('User signed out.');
-                // The onAuthStateChanged listener will handle hiding the app
-            });
-        });
-        
         // --- Auth State Observer ---
         auth.onAuthStateChanged(user => {
             if (user) {
-                // User is signed in.
                 authContainer.style.display = 'none';
                 appContainer.style.display = 'block';
-                // Initialize the main application logic for the logged-in user
-                initializeAppLogic(user);
+                if (typeof unsubscribe === 'function') unsubscribe(); // Detach any old listener
+                initializeAppLogic(user); // Start the app for the logged-in user
             } else {
-                // User is signed out.
                 appContainer.style.display = 'none';
                 authContainer.style.display = 'block';
+                if (typeof unsubscribe === 'function') {
+                    unsubscribe(); // Detach the listener on logout
+                    console.log("Firestore listener detached.");
+                }
             }
         });
 
-
-        // --- Main Application Logic (wrapped in a function) ---
+        // --- Main Application Logic ---
         function initializeAppLogic(user) {
-            // This function contains all your original script.js code.
-            // It's called only when a user is logged in.
+            console.log(`Initializing app for user: ${user.uid}`);
             
             // --- App DOM Elements ---
             const topicInput = document.getElementById('topic-input');
@@ -467,38 +338,35 @@
 
             const colorPalette = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff'];
             
-            // --- Data Initialization from Firestore ---
-            let deadlines = [];
-            let subjects = [];
-            let completedDates = [];
+            let deadlines = [], subjects = [], completedDates = [];
             
-            // Reference to the user's document in Firestore
             const userDocRef = db.collection('users').doc(user.uid);
 
-            // Listen for real-time updates from Firestore
-            userDocRef.onSnapshot(doc => {
+            // This listener is the core of the app. It gets data from Firestore
+            // and automatically re-runs whenever the data changes in the database.
+            unsubscribe = userDocRef.onSnapshot(doc => {
+                console.log("Received data from Firestore.");
                 if (doc.exists) {
                     const data = doc.data();
                     deadlines = data.deadlines || [];
                     subjects = data.subjects || [{ name: 'General', tasks: [] }];
                     completedDates = data.completedDates || [];
                 } else {
-                    // If the user is new, create their document
                     console.log("No data found, creating new user document.");
-                    deadlines = [];
                     subjects = [{ name: 'General', tasks: [] }];
-                    completedDates = [];
-                    save(); // Save the initial empty state
+                    save(); // Save the initial state for a new user
                 }
-                renderAll(); // Re-render the entire UI with the new data
+                renderAll(); // Re-render the entire UI with the latest data
+            }, error => {
+                console.error("Firestore listener error: ", error);
+                alert("Error connecting to the database. Please check your Firestore security rules and internet connection.");
             });
 
-            let currentDate = new Date();
-            let currentMonth = currentDate.getMonth();
-            let currentYear = currentDate.getFullYear();
+            let currentDate = new Date(), currentMonth = currentDate.getMonth(), currentYear = currentDate.getFullYear();
 
-            // --- Save Function (to Firestore) ---
+            // --- Save Function (writes the current state to Firestore) ---
             function save() {
+                // This replaces localStorage.setItem
                 userDocRef.set({
                     deadlines: deadlines,
                     subjects: subjects,
@@ -506,13 +374,7 @@
                 }).catch(error => console.error("Error saving to Firestore: ", error));
             }
             
-            function formatDate(date) {
-                const d = new Date(date);
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
+            function formatDate(date) { const d = new Date(date); const year = d.getFullYear(); const month = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0'); return `${year}-${month}-${day}`; }
 
             function showColorPicker(event, deadlineIndex) {
                 customColorPicker.innerHTML = '';
@@ -520,31 +382,18 @@
                 const rect = event.target.getBoundingClientRect();
                 customColorPicker.style.top = `${rect.bottom + window.scrollY + 5}px`;
                 customColorPicker.style.left = `${rect.left + window.scrollX}px`;
-
                 colorPalette.forEach(color => {
                     const swatch = document.createElement('div');
                     swatch.className = 'color-swatch';
                     swatch.style.backgroundColor = color;
-                    swatch.onclick = () => {
-                        deadlines[deadlineIndex].color = color;
-                        save();
-                        // Firestore listener will handle re-rendering
-                        hideColorPicker();
-                    };
+                    swatch.onclick = () => { deadlines[deadlineIndex].color = color; save(); hideColorPicker(); };
                     customColorPicker.appendChild(swatch);
                 });
-
                 setTimeout(() => { document.addEventListener('click', hideColorPicker, { once: true }); }, 0);
                 event.stopPropagation();
             }
 
-            function hideColorPicker(event) {
-                if (event && customColorPicker.contains(event.target)) {
-                    document.addEventListener('click', hideColorPicker, { once: true });
-                    return;
-                }
-                customColorPicker.style.display = 'none';
-            }
+            function hideColorPicker(event) { if (event && customColorPicker.contains(event.target)) { document.addEventListener('click', hideColorPicker, { once: true }); return; } customColorPicker.style.display = 'none'; }
             
             function renderDeadlines() {
                 deadlineList.innerHTML = '';
@@ -555,11 +404,9 @@
                     colorCircle.style.backgroundColor = deadline.color;
                     colorCircle.addEventListener('click', (e) => showColorPicker(e, index));
                     li.appendChild(colorCircle);
-
                     const textSpan = document.createElement('span');
                     textSpan.textContent = `${deadline.topic} - ${deadline.date}`;
                     li.appendChild(textSpan);
-
                     const deleteBtn = document.createElement('button');
                     deleteBtn.textContent = '✖';
                     deleteBtn.className = 'delete-btn';
@@ -574,12 +421,9 @@
                     const newColor = colorPalette[deadlines.length % colorPalette.length];
                     deadlines.push({ topic, date: dateString, color: newColor });
                     deadlines.sort((a, b) => new Date(a.date) - new Date(b.date));
-                    topicInput.value = '';
-                    deadlineInput.value = '';
+                    topicInput.value = ''; deadlineInput.value = '';
                     save();
-                } else {
-                    alert('Please provide a topic and select a date.');
-                }
+                } else { alert('Please provide a topic and select a date.'); }
             }
 
             function addDeadline() { createAndAddDeadline(topicInput.value.trim(), deadlineInput.value); }
@@ -594,22 +438,14 @@
                 createAndAddDeadline(topic, formatDate(date));
             }
 
-            function deleteDeadline(index) {
-                deadlines.splice(index, 1);
-                save();
-            }
+            function deleteDeadline(index) { deadlines.splice(index, 1); save(); }
 
             function renderSubjects() {
-                subjectsContainer.innerHTML = '';
-                subjectSelect.innerHTML = '';
-                if (subjects.length === 0) {
-                    subjectSelect.innerHTML = '<option disabled>No subjects available</option>';
-                    return;
-                }
+                subjectsContainer.innerHTML = ''; subjectSelect.innerHTML = '';
+                if (!subjects || subjects.length === 0) { subjectSelect.innerHTML = '<option disabled>No subjects</option>'; return; }
                 subjects.forEach((subject, subjectIndex) => {
                     const option = document.createElement('option');
-                    option.value = subjectIndex;
-                    option.textContent = subject.name;
+                    option.value = subjectIndex; option.textContent = subject.name;
                     subjectSelect.appendChild(option);
                     const column = document.createElement('div');
                     column.className = 'subject-column';
@@ -618,72 +454,46 @@
                     titleSpan.textContent = subject.name;
                     header.appendChild(titleSpan);
                     const deleteSubBtn = document.createElement('button');
-                    deleteSubBtn.textContent = '🗑️';
-                    deleteSubBtn.className = 'delete-subject-btn';
-                    deleteSubBtn.title = `Delete ${subject.name} subject`;
-                    deleteSubBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        if (confirm(`Are you sure you want to delete "${subject.name}"?`)) {
-                            deleteSubject(subjectIndex);
-                        }
-                    });
+                    deleteSubBtn.textContent = '🗑️'; deleteSubBtn.className = 'delete-subject-btn';
+                    deleteSubBtn.title = `Delete ${subject.name}`;
+                    deleteSubBtn.onclick = (e) => { e.stopPropagation(); if (confirm(`Delete "${subject.name}"?`)) { deleteSubject(subjectIndex); } };
                     header.appendChild(deleteSubBtn);
                     column.appendChild(header);
                     const ul = document.createElement('ul');
-                    if (subject.tasks) { // Ensure tasks array exists
+                    if (subject.tasks) {
                         subject.tasks.forEach((task, taskIndex) => {
                             const li = document.createElement('li');
                             if (task.completed) li.classList.add('completed');
                             const taskText = document.createElement('span');
                             taskText.textContent = task.text;
                             li.appendChild(taskText);
-                            li.addEventListener('click', () => toggleTask(subjectIndex, taskIndex));
+                            li.onclick = () => toggleTask(subjectIndex, taskIndex);
                             const deleteBtn = document.createElement('button');
-                            deleteBtn.textContent = '✖';
-                            deleteBtn.className = 'delete-btn';
-                            deleteBtn.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                deleteTask(subjectIndex, taskIndex);
-                            });
+                            deleteBtn.textContent = '✖'; deleteBtn.className = 'delete-btn';
+                            deleteBtn.onclick = (e) => { e.stopPropagation(); deleteTask(subjectIndex, taskIndex); };
                             li.appendChild(deleteBtn);
                             ul.appendChild(li);
                         });
                     }
-                    column.appendChild(ul);
-                    subjectsContainer.appendChild(column);
+                    column.appendChild(ul); subjectsContainer.appendChild(column);
                 });
             }
 
-            function addSubject() {
-                const name = prompt('Enter the new subject name:');
-                if (name && name.trim()) {
-                    subjects.push({ name: name.trim(), tasks: [] });
-                    save();
-                }
-            }
-            
-            function deleteSubject(subjectIndex) {
-                subjects.splice(subjectIndex, 1);
-                save();
-            }
+            function addSubject() { const name = prompt('Enter the new subject name:'); if (name && name.trim()) { subjects.push({ name: name.trim(), tasks: [] }); save(); } }
+            function deleteSubject(subjectIndex) { subjects.splice(subjectIndex, 1); save(); }
 
             function addTask() {
                 const text = taskInput.value.trim();
                 const subjectIndex = subjectSelect.value;
                 if (text && subjectIndex !== null && subjects[subjectIndex]) {
-                    if (!subjects[subjectIndex].tasks) {
-                        subjects[subjectIndex].tasks = []; // Initialize if it doesn't exist
-                    }
+                    if (!subjects[subjectIndex].tasks) subjects[subjectIndex].tasks = [];
                     subjects[subjectIndex].tasks.push({ text, completed: false });
                     taskInput.value = '';
                     save();
                 }
             }
 
-            function deleteTask(subjectIndex, taskIndex) {
-                subjects[subjectIndex].tasks.splice(taskIndex, 1);
-                save();
-            }
+            function deleteTask(subjectIndex, taskIndex) { subjects[subjectIndex].tasks.splice(taskIndex, 1); save(); }
 
             function toggleTask(subjectIndex, taskIndex) {
                 const task = subjects[subjectIndex].tasks[taskIndex];
@@ -692,11 +502,28 @@
                 if (task.completed) {
                     if (!completedDates.includes(todayString)) completedDates.push(todayString);
                 } else {
-                    const allTasks = subjects.flatMap(s => s.tasks);
-                    const anyCompletedToday = allTasks.some(t => t.completed && completedDates.includes(todayString));
-                    if (!anyCompletedToday) {
-                        const index = completedDates.indexOf(todayString);
-                        if (index > -1) completedDates.splice(index, 1);
+                    const allTasks = subjects.flatMap(s => s.tasks || []);
+                    const anyCompletedToday = allTasks.some(t => t.completed);
+                    const todayTasksCompleted = allTasks.filter(t => t.completed).length > 0;
+
+                    // This logic needs to be more specific. Let's check if there are ANY other completed tasks today.
+                    let isAnyOtherTaskCompletedToday = false;
+                    subjects.forEach(s => {
+                        (s.tasks || []).forEach(t => {
+                            if (t.completed) {
+                                // This check is tricky without storing completion dates per task.
+                                // For now, we assume if any task is completed, we keep the green check.
+                                // A more robust system would store completion dates.
+                                isAnyOtherTaskCompletedToday = true;
+                            }
+                        });
+                    });
+                    
+                    // A simpler approach: only remove the date if NO tasks are completed.
+                    const allTasksNow = subjects.flatMap(s => s.tasks || []);
+                    if (!allTasksNow.some(t => t.completed)) {
+                         const index = completedDates.indexOf(todayString);
+                         if (index > -1) completedDates.splice(index, 1);
                     }
                 }
                 save();
@@ -707,63 +534,28 @@
                 const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
                 const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
                 monthYearDisplay.textContent = `${new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} ${currentYear}`;
-
-                for (let i = 0; i < firstDayOfMonth; i++) {
-                    calendarDays.appendChild(document.createElement('div')).classList.add('empty-day');
-                }
-
+                for (let i = 0; i < firstDayOfMonth; i++) { calendarDays.appendChild(document.createElement('div')).classList.add('empty-day'); }
                 for (let day = 1; day <= daysInMonth; day++) {
                     const dayCell = document.createElement('div');
-                    const dayNumber = document.createElement('span');
-                    dayNumber.className = 'date-number';
-                    dayNumber.textContent = day;
+                    const dayNumber = document.createElement('span'); dayNumber.className = 'date-number'; dayNumber.textContent = day;
                     dayCell.appendChild(dayNumber);
-
-                    const cellDate = new Date(currentYear, currentMonth, day);
-                    cellDate.setHours(0,0,0,0);
-                    const today = new Date();
-                    today.setHours(0,0,0,0);
-
+                    const cellDate = new Date(currentYear, currentMonth, day); cellDate.setHours(0,0,0,0);
+                    const today = new Date(); today.setHours(0,0,0,0);
                     const cellDateString = formatDate(cellDate);
                     const hasCompletedTasks = completedDates.includes(cellDateString);
-
-                    if (cellDate.getTime() === today.getTime()) {
-                        dayCell.classList.add('current-day');
-                        if (hasCompletedTasks) dayCell.classList.add('completed-border');
-                    } else if (cellDate < today) {
-                        if (hasCompletedTasks) dayCell.classList.add('completed-border');
-                        else dayCell.classList.add('missed-border');
-                    } else {
-                        if (hasCompletedTasks) dayCell.classList.add('completed-border');
-                    }
+                    if (cellDate.getTime() === today.getTime()) { dayCell.classList.add('current-day'); if (hasCompletedTasks) dayCell.classList.add('completed-border'); } 
+                    else if (cellDate < today) { if (hasCompletedTasks) dayCell.classList.add('completed-border'); else dayCell.classList.add('missed-border'); } 
+                    else { if (hasCompletedTasks) dayCell.classList.add('completed-border'); }
                     if (hasCompletedTasks) dayCell.classList.add('has-completed-tasks');
-
-                    const activeTasks = deadlines.filter(d => {
-                        const deadlineDate = new Date(d.date);
-                        deadlineDate.setHours(23, 59, 59, 999); 
-                        return cellDate >= today && cellDate <= deadlineDate;
-                    });
-
+                    const activeTasks = deadlines.filter(d => { const deadlineDate = new Date(d.date); deadlineDate.setHours(23, 59, 59, 999); return cellDate >= today && cellDate <= deadlineDate; });
                     if (activeTasks.length > 0) {
                         if (activeTasks.length <= 4) {
-                            const indicators = document.createElement('div');
-                            indicators.className = 'task-indicators';
-                            activeTasks.forEach(task => {
-                                const line = document.createElement('div');
-                                line.className = 'task-line';
-                                line.style.backgroundColor = task.color;
-                                indicators.appendChild(line);
-                            });
+                            const indicators = document.createElement('div'); indicators.className = 'task-indicators';
+                            activeTasks.forEach(task => { const line = document.createElement('div'); line.className = 'task-line'; line.style.backgroundColor = task.color; indicators.appendChild(line); });
                             dayCell.appendChild(indicators);
                         } else {
-                            const dotContainer = document.createElement('div');
-                            dotContainer.className = 'task-dot-container';
-                            activeTasks.slice(0, 8).forEach(task => {
-                                const dot = document.createElement('div');
-                                dot.className = 'task-dot';
-                                dot.style.backgroundColor = task.color;
-                                dotContainer.appendChild(dot);
-                            });
+                            const dotContainer = document.createElement('div'); dotContainer.className = 'task-dot-container';
+                            activeTasks.slice(0, 8).forEach(task => { const dot = document.createElement('div'); dot.className = 'task-dot'; dot.style.backgroundColor = task.color; dotContainer.appendChild(dot); });
                             dayCell.appendChild(dotContainer);
                         }
                     }
@@ -771,18 +563,8 @@
                 }
             }
 
-            function changeMonth(offset) {
-                currentMonth += offset;
-                if (currentMonth < 0) { currentMonth = 11; currentYear--; } 
-                else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-                renderCalendar();
-            }
-
-            function renderAll() {
-                renderDeadlines();
-                renderSubjects();
-                renderCalendar();
-            }
+            function changeMonth(offset) { currentMonth += offset; if (currentMonth < 0) { currentMonth = 11; currentYear--; } else if (currentMonth > 11) { currentMonth = 0; currentYear++; } renderCalendar(); }
+            function renderAll() { renderDeadlines(); renderSubjects(); renderCalendar(); }
 
             // --- Event Listeners ---
             addDeadlineBtn.addEventListener('click', addDeadline);
@@ -791,7 +573,7 @@
             addWeekBtn.addEventListener('click', () => addQuickDeadline('week'));
             addMonthBtn.addEventListener('click', () => addQuickDeadline('month'));
             addSubjectBtn.addEventListener('click', addSubject);
-addTaskBtn.addEventListener('click', addTask);
+            addTaskBtn.addEventListener('click', addTask);
             prevMonthBtn.addEventListener('click', () => changeMonth(-1));
             nextMonthBtn.addEventListener('click', () => changeMonth(1));
         }
