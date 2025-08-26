@@ -166,7 +166,7 @@
         .notification-item { padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 0.9em; }
         .notification-item:last-child { border-bottom: none; }
 
-        #streak-display { font-size: 1.2em; font-weight: bold; }
+        #streak-display, #xp-display { font-size: 1.2em; font-weight: bold; }
 
         .page-content {
             padding: 30px;
@@ -354,6 +354,7 @@
                 <h2 id="page-title">Dashboard</h2>
                 <div class="header-icons">
                     <span id="streak-display"></span>
+                    <span id="xp-display"></span>
                     <div id="notification-bell">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                         <div id="notification-dot"></div>
@@ -518,6 +519,7 @@
         const notificationDot = document.getElementById('notification-dot');
         const notificationBox = document.getElementById('notification-box');
         const streakDisplay = document.getElementById('streak-display');
+        const xpDisplay = document.getElementById('xp-display');
 
         // --- Form Switching Logic ---
         document.getElementById('show-signup').addEventListener('click', () => { loginForm.style.display = 'none'; forgotPasswordForm.style.display = 'none'; signupForm.style.display = 'block'; authError.textContent = ''; });
@@ -682,13 +684,15 @@
                     completedDates = data.completedDates || [];
                     notifications = data.notifications || [];
                     streak = data.streak || 0;
+                    const xp = data.xp || 0;
                     lastCompletedDate = data.lastCompletedDate || null;
                     document.getElementById('profile-name').value = data.name || user.displayName;
+                    renderAll(xp);
                 } else {
                     save(); 
+                    renderAll(0);
                 }
                 checkDueTasks();
-                renderAll(); 
             }, error => console.error("Firestore listener error: ", error));
 
             let currentDate = new Date(), currentMonth = currentDate.getMonth(), currentYear = currentDate.getFullYear();
@@ -699,7 +703,7 @@
                 }, { merge: true }).catch(error => console.error("Error saving to Firestore: ", error));
             }
             
-            function renderAll() { 
+            function renderAll(xp) {
                 renderDeadlines();
                 renderDueTasks();
                 renderCompletedTasks();
@@ -710,6 +714,7 @@
                 populateFocusTasks();
                 renderNotifications();
                 renderStreak();
+                renderXp(xp);
             }
 
             function showColorPicker(event, deadlineIndex) {
@@ -950,6 +955,10 @@
             
             function renderStreak() {
                 streakDisplay.textContent = `🔥 ${streak}`;
+            }
+
+            function renderXp(xp) {
+                xpDisplay.textContent = `⭐ ${xp} XP`;
             }
 
             // --- Notification Logic ---
