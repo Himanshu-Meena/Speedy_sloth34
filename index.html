@@ -135,6 +135,9 @@
             padding: 20px 30px;
             background-color: var(--surface-color);
             border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         header h2 {
@@ -257,6 +260,7 @@
             border-radius: 8px;
             padding: 10px;
             border: 1px solid var(--border-color);
+            min-width: 0;
         }
         .week-day-header {
             text-align: center;
@@ -600,7 +604,7 @@
         document.getElementById('nav-dashboard').addEventListener('click', (e) => { e.preventDefault(); showPage('dashboard'); });
         document.getElementById('nav-calendar').addEventListener('click', (e) => { e.preventDefault(); showPage('calendar'); });
         document.getElementById('nav-focus').addEventListener('click', (e) => { e.preventDefault(); showPage('focus-session'); });
-        document.getElementById('nav-leaderboard').addEventListener('click', (e) => { e.preventDefault(); showPage('leaderboard'); });
+        document.getElementById('nav-leaderboard').addEventListener('click', (e) => { e.preventDefault(); showPage('leaderboard'); renderLeaderboard(); });
         document.getElementById('nav-settings').addEventListener('click', (e) => { e.preventDefault(); showPage('settings'); });
         profileIcon.addEventListener('click', (e) => { e.preventDefault(); showPage('profile'); });
 
@@ -813,9 +817,14 @@
             }
 
             function toggleDeadlineCompletion(index) {
-                deadlines[index].completed = true;
-                updateStreak();
-                userDocRef.update({ xp: firebase.firestore.FieldValue.increment(50) });
+                const deadline = deadlines[index];
+                deadline.completed = !deadline.completed;
+                if(deadline.completed) {
+                    updateStreak();
+                    userDocRef.update({ xp: firebase.firestore.FieldValue.increment(50) });
+                } else {
+                    userDocRef.update({ xp: firebase.firestore.FieldValue.increment(-50) });
+                }
                 save();
             }
 
@@ -883,6 +892,8 @@
                 if (task.completed) {
                     updateStreak();
                     userDocRef.update({ xp: firebase.firestore.FieldValue.increment(50) });
+                } else {
+                    userDocRef.update({ xp: firebase.firestore.FieldValue.increment(-50) });
                 }
                 save(); 
             }
@@ -1005,7 +1016,7 @@
             const timerProgressCircle = document.querySelector('.timer-progress-circle');
             const circumference = 2 * Math.PI * 110;
 
-            let timerInterval, totalDuration, elapsedTime, isPaused, pauseTimeout;
+            let timerInterval, totalDuration, isPaused, pauseTimeout, startTime, pauseStartTime, totalPausedTime = 0;
 
             function populateFocusTasks() {
                 focusTaskSelect.innerHTML = '<option value="">Select a task to focus on</option>';
@@ -1028,8 +1039,10 @@
                     return;
                 }
                 totalDuration = duration * 60;
-                elapsedTime = 0;
+                startTime = Date.now();
+                totalPausedTime = 0;
                 isPaused = false;
+
                 startFocusBtn.style.display = 'none';
                 pauseFocusBtn.style.display = 'inline-block';
                 stopFocusBtn.style.display = 'inline-block';
@@ -1039,28 +1052,33 @@
             }
 
             function updateTimer() {
-                elapsedTime++;
-                const minutes = Math.floor(elapsedTime / 60).toString().padStart(2, '0');
-                const seconds = (elapsedTime % 60).toString().padStart(2, '0');
-                timerDisplay.textContent = `${minutes}:${seconds}`;
+                const elapsedMs = Date.now() - startTime - totalPausedTime;
+                const elapsedSeconds = Math.floor(elapsedMs / 1000);
                 
-                const progress = elapsedTime / totalDuration;
-                timerProgressCircle.style.strokeDashoffset = circumference * (1 - progress);
-
-                if (elapsedTime >= totalDuration) {
-                    stopTimer();
+                if (elapsedSeconds >= totalDuration) {
+                    stopTimer(true);
                     addNotification("Focus session complete!");
+                    return;
                 }
+
+                const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+                const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
+                timerDisplay.textContent = `${minutes}:${seconds}`;
+
+                const progress = elapsedMs / (totalDuration * 1000);
+                timerProgressCircle.style.strokeDashoffset = circumference * (1 - progress);
             }
 
             function pauseTimer() {
                 if (isPaused) { // Resume
                     isPaused = false;
+                    totalPausedTime += Date.now() - pauseStartTime;
                     pauseFocusBtn.textContent = 'Pause';
                     timerInterval = setInterval(updateTimer, 1000);
                     clearTimeout(pauseTimeout);
                 } else { // Pause
                     isPaused = true;
+                    pauseStartTime = Date.now();
                     pauseFocusBtn.textContent = 'Resume';
                     clearInterval(timerInterval);
                     // Set timeout for email notification
@@ -1070,14 +1088,22 @@
                 }
             }
 
-            function stopTimer() {
+            function stopTimer(isCompleted = false) {
                 clearInterval(timerInterval);
                 clearTimeout(pauseTimeout);
 
+                let finalElapsedTimeInSeconds;
+                if (isCompleted) {
+                    finalElapsedTimeInSeconds = totalDuration;
+                } else {
+                    const elapsedMs = isPaused ? (pauseStartTime - startTime - totalPausedTime) : (Date.now() - startTime - totalPausedTime);
+                    finalElapsedTimeInSeconds = Math.floor(elapsedMs / 1000);
+                }
+
                 const [subjectIndex, taskIndex] = focusTaskSelect.value.split('-');
                 if (subjectIndex && taskIndex) {
-                    subjects[subjectIndex].tasks[taskIndex].focusTime = (subjects[subjectIndex].tasks[taskIndex].focusTime || 0) + elapsedTime;
-                    userDocRef.update({ xp: firebase.firestore.FieldValue.increment(Math.floor(elapsedTime / 60)) });
+                    subjects[subjectIndex].tasks[taskIndex].focusTime = (subjects[subjectIndex].tasks[taskIndex].focusTime || 0) + finalElapsedTimeInSeconds;
+                    userDocRef.update({ xp: firebase.firestore.FieldValue.increment(Math.floor(finalElapsedTimeInSeconds / 60)) });
                     save();
                 }
 
@@ -1086,6 +1112,10 @@
                 startFocusBtn.style.display = 'inline-block';
                 pauseFocusBtn.style.display = 'none';
                 stopFocusBtn.style.display = 'none';
+
+                startTime = null;
+                totalPausedTime = 0;
+                pauseStartTime = null;
             }
 
             startFocusBtn.addEventListener('click', startTimer);
