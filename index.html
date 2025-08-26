@@ -15,8 +15,18 @@
             --muted-text-color: #6c757d;
             --border-color: #e9ecef;
             --danger-color: #e74c3c;
+            --success-color: #28a745;
             --sidebar-width: 240px;
         }
+
+        body.dark-mode {
+            --background-color: #121212;
+            --surface-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --muted-text-color: #a0a0a0;
+            --border-color: #333;
+        }
+
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -50,7 +60,7 @@
         }
 
         .auth-form { display: flex; flex-direction: column; gap: 15px; }
-        .auth-form input { padding: 12px; border-radius: 8px; border: 1px solid #ced4da; font-size: 16px; }
+        .auth-form input { padding: 12px; border-radius: 8px; border: 1px solid #ced4da; font-size: 16px; background-color: var(--background-color); color: var(--text-color); }
         .auth-form button { padding: 12px 20px; border: none; border-radius: 8px; background-color: var(--primary-color); color: white; cursor: pointer; font-size: 16px; font-weight: 500; transition: background-color 0.3s ease; }
         .auth-form button:hover { background-color: var(--primary-hover); }
         .form-switch-link, .forgot-password-link { color: var(--primary-color); text-decoration: none; cursor: pointer; margin-top: 10px; font-size: 14px; }
@@ -132,6 +142,8 @@
             font-size: 1.8rem;
             font-weight: 600;
         }
+        
+        .header-icons { display: flex; align-items: center; gap: 20px; }
 
         #profile-icon {
             width: 40px;
@@ -146,6 +158,13 @@
             cursor: pointer;
             text-decoration: none;
         }
+        
+        #notification-bell { position: relative; cursor: pointer; }
+        #notification-bell svg { width: 24px; height: 24px; }
+        #notification-dot { width: 8px; height: 8px; background-color: var(--danger-color); border-radius: 50%; position: absolute; top: 0; right: 0; display: none; }
+        #notification-box { display: none; position: absolute; top: 50px; right: 20px; width: 300px; max-height: 400px; overflow-y: auto; background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000; }
+        .notification-item { padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 0.9em; }
+        .notification-item:last-child { border-bottom: none; }
 
         .page-content {
             padding: 30px;
@@ -192,7 +211,7 @@
             font-size: 14px;
             min-height: 20px;
         }
-        .success { color: #28a745; }
+        .success { color: var(--success-color); }
         .error { color: var(--danger-color); }
 
 
@@ -205,7 +224,7 @@
         #subjects-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .subject-column { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 12px; padding: 20px; }
         .subject-column h3 { margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #dee2e6; color: #495057; display: flex; justify-content: space-between; align-items: center; font-weight: 500; }
-        .subject-column li, #deadline-list li { padding: 12px; border-bottom: none; display: flex; justify-content: flex-start; align-items: center; gap: 12px; cursor: pointer; background-color: #ffffff; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .subject-column li, #deadline-list li, #due-tasks-list li, #completed-tasks-list li { padding: 12px; border-bottom: none; display: flex; justify-content: flex-start; align-items: center; gap: 12px; cursor: pointer; background-color: #ffffff; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .deadline-inputs { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         #topic-input { flex-grow: 1; min-width: 200px; }
         #deadline-input { width: auto; }
@@ -263,6 +282,8 @@
         #calendar-legend { margin-top: 20px; }
         .legend-item { display: flex; align-items: center; margin-bottom: 5px; }
         .legend-color-box { width: 15px; height: 15px; margin-right: 10px; border-radius: 3px; }
+        .task-tick { margin-right: 10px; }
+        .focus-time { font-size: 0.8em; color: var(--muted-text-color); margin-left: auto; }
 
         /* --- Focus Timer Styles --- */
         #focus-session-page { text-align: center; }
@@ -273,6 +294,13 @@
         .focus-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; max-width: 400px; margin: 0 auto; }
         .focus-controls select, .focus-controls input { width: 100%; box-sizing: border-box; }
         .timer-buttons { display: flex; gap: 10px; }
+
+        /* --- Leaderboard Styles --- */
+        .leaderboard-filters { margin-bottom: 20px; }
+        .leaderboard-list li { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border-color); }
+        
+        /* --- Settings Styles --- */
+        .setting-item { display: flex; justify-content: space-between; align-items: center; }
 
     </style>
 </head>
@@ -289,7 +317,7 @@
     <div id="app-wrapper">
         <!-- Sidebar -->
         <aside id="sidebar">
-            <h1>Productivity</h1>
+            <h1>Productivity Tracker</h1>
             <nav>
                 <a href="#" id="nav-dashboard" class="nav-link active">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
@@ -322,7 +350,14 @@
         <div id="main-content">
             <header>
                 <h2 id="page-title">Dashboard</h2>
-                <a href="#" id="profile-icon"></a>
+                <div class="header-icons">
+                    <div id="notification-bell">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        <div id="notification-dot"></div>
+                    </div>
+                    <a href="#" id="profile-icon"></a>
+                </div>
+                <div id="notification-box"></div>
             </header>
             
             <div class="page-content">
@@ -334,6 +369,8 @@
                      </section>
                      <section id="checklist"><h2>Checklist</h2><div id="checklist-controls"><button id="add-subject-btn">Add Subject</button><input type="text" id="task-input" placeholder="New task..."><select id="subject-select"></select><button id="add-task-btn">Add Task</button></div><div id="subjects-container"></div></section> 
                      <section id="deadlines"><h2>Current Tasks</h2><div class="deadline-inputs"><input type="text" id="topic-input" placeholder="Add new topic"><input type="date" id="deadline-input"></div><div class="quick-add-btns"><button id="add-today-btn">Today</button><button id="add-tomorrow-btn">Tomorrow</button><button id="add-week-btn">Next Week</button><button id="add-month-btn">Next Month</button></div><button id="add-deadline-btn">Add Deadline with Date</button><ul id="deadline-list"></ul></section>
+                     <section id="due-tasks"><h2>Due Tasks</h2><ul id="due-tasks-list"></ul></section>
+                     <section id="completed-tasks"><h2>Completed Tasks</h2><ul id="completed-tasks-list"></ul></section>
                 </div>
 
                 <!-- Calendar Page -->
@@ -367,12 +404,40 @@
 
                 <!-- Leaderboard Page -->
                 <div id="leaderboard-page" class="page">
-                    <section><h2>Leaderboard</h2><p>This page is under construction. See how you rank against your friends soon!</p></section>
+                    <section>
+                        <h2>Leaderboard</h2>
+                        <div class="leaderboard-rules">
+                            <h3>How it works:</h3>
+                            <ul>
+                                <li><strong>+1 XP</strong> per minute in a focus session.</li>
+                                <li><strong>+50 XP</strong> for each completed task.</li>
+                                <li><strong>-50 XP</strong> for each task that becomes overdue.</li>
+                            </ul>
+                        </div>
+                        <div class="leaderboard-filters">
+                            <label for="leaderboard-filter">Filter:</label>
+                            <select id="leaderboard-filter">
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="total">Total</option>
+                            </select>
+                        </div>
+                        <ul id="leaderboard-list" class="leaderboard-list"></ul>
+                    </section>
                 </div>
 
                 <!-- Settings Page -->
                 <div id="settings-page" class="page">
-                    <section><h2>Settings</h2><p>This page is under construction. Customize your app experience here.</p></section>
+                    <section>
+                        <h2>Settings</h2>
+                        <div class="setting-item">
+                            <span>Dark Mode</span>
+                            <label class="switch">
+                                <input type="checkbox" id="dark-mode-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </section>
                 </div>
 
                 <!-- Profile Page -->
@@ -446,6 +511,9 @@
         const authError = document.getElementById('auth-error');
         const profileIcon = document.getElementById('profile-icon');
         const pageTitle = document.getElementById('page-title');
+        const notificationBell = document.getElementById('notification-bell');
+        const notificationDot = document.getElementById('notification-dot');
+        const notificationBox = document.getElementById('notification-box');
 
         // --- Form Switching Logic ---
         document.getElementById('show-signup').addEventListener('click', () => { loginForm.style.display = 'none'; forgotPasswordForm.style.display = 'none'; signupForm.style.display = 'block'; authError.textContent = ''; });
@@ -469,7 +537,9 @@
                            email: email,
                            deadlines: [],
                            subjects: [],
-                           completedDates: [] 
+                           completedDates: [],
+                           xp: 0,
+                           notifications: []
                         });
                     });
                 })
@@ -543,6 +613,8 @@
             const deadlineInput = document.getElementById('deadline-input');
             const addDeadlineBtn = document.getElementById('add-deadline-btn');
             const deadlineList = document.getElementById('deadline-list');
+            const dueTasksList = document.getElementById('due-tasks-list');
+            const completedTasksList = document.getElementById('completed-tasks-list');
             const addSubjectBtn = document.getElementById('add-subject-btn');
             const taskInput = document.getElementById('task-input');
             const subjectSelect = document.getElementById('subject-select');
@@ -556,7 +628,7 @@
             const customColorPicker = document.getElementById('custom-color-picker');
             const calendarLegend = document.getElementById('calendar-legend');
 
-            let deadlines = [], subjects = [], completedDates = [];
+            let deadlines = [], subjects = [], completedDates = [], notifications = [];
             const userDocRef = db.collection('users').doc(user.uid);
             const colorPalette = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff'];
 
@@ -566,9 +638,11 @@
                     deadlines = data.deadlines || [];
                     subjects = data.subjects || [];
                     completedDates = data.completedDates || [];
+                    notifications = data.notifications || [];
                 } else {
                     save(); 
                 }
+                checkDueTasks();
                 renderAll(); 
             }, error => console.error("Firestore listener error: ", error));
 
@@ -576,17 +650,20 @@
 
             function save() {
                 userDocRef.set({
-                    name: user.displayName, email: user.email, deadlines, subjects, completedDates
+                    name: user.displayName, email: user.email, deadlines, subjects, completedDates, notifications
                 }, { merge: true }).catch(error => console.error("Error saving to Firestore: ", error));
             }
             
             function renderAll() { 
-                renderDeadlines(); 
+                renderDeadlines();
+                renderDueTasks();
+                renderCompletedTasks();
                 renderSubjects(); 
                 renderCalendar(); 
                 renderWeekView();
                 renderCalendarLegend();
                 populateFocusTasks();
+                renderNotifications();
             }
 
             function showColorPicker(event, deadlineIndex) {
@@ -610,13 +687,21 @@
 
             function renderDeadlines() {
                 deadlineList.innerHTML = '';
-                deadlines.forEach((deadline, index) => {
+                deadlines.filter(d => !d.isDue && !d.completed).forEach((deadline, index) => {
                     const li = document.createElement('li');
+                    const tick = document.createElement('input');
+                    tick.type = 'checkbox';
+                    tick.className = 'task-tick';
+                    tick.checked = deadline.completed;
+                    tick.onchange = () => toggleDeadlineCompletion(index);
+                    li.appendChild(tick);
+
                     const colorCircle = document.createElement('span');
                     colorCircle.className = 'deadline-color-circle';
                     colorCircle.style.backgroundColor = deadline.color || '#ccc';
-                    colorCircle.onclick = (e) => showColorPicker(e, index);
+                    colorCircle.onclick = (e) => showColorPicker(e, deadlines.findIndex(d => d.topic === deadline.topic));
                     li.appendChild(colorCircle);
+
                     li.append(` ${deadline.topic} - ${deadline.date}`);
                     const deleteBtn = document.createElement('button');
                     deleteBtn.textContent = '✖';
@@ -627,12 +712,63 @@
                 });
             }
 
+            function renderDueTasks() {
+                dueTasksList.innerHTML = '';
+                deadlines.filter(d => d.isDue && !d.completed).forEach((deadline, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span>${deadline.topic} (Due: ${deadline.date})</span>`;
+                    const newDateInput = document.createElement('input');
+                    newDateInput.type = 'date';
+                    newDateInput.onchange = (e) => {
+                        deadlines[index].date = e.target.value;
+                        deadlines[index].isDue = false;
+                        save();
+                    };
+                    li.appendChild(newDateInput);
+                    const completeBtn = document.createElement('button');
+                    completeBtn.textContent = '✓';
+                    completeBtn.onclick = () => toggleDeadlineCompletion(index);
+                    li.appendChild(completeBtn);
+                    dueTasksList.appendChild(li);
+                });
+            }
+
+            function renderCompletedTasks() {
+                completedTasksList.innerHTML = '';
+                deadlines.filter(d => d.completed).forEach(deadline => {
+                    const li = document.createElement('li');
+                    li.textContent = deadline.topic;
+                    completedTasksList.appendChild(li);
+                });
+            }
+
+            function toggleDeadlineCompletion(index) {
+                deadlines[index].completed = !deadlines[index].completed;
+                if (deadlines[index].completed) {
+                    userDocRef.update({ xp: firebase.firestore.FieldValue.increment(50) });
+                }
+                save();
+            }
+
+            function checkDueTasks() {
+                const today = new Date().toISOString().split('T')[0];
+                let changed = false;
+                deadlines.forEach(d => {
+                    if (!d.completed && d.date < today && !d.isDue) {
+                        d.isDue = true;
+                        userDocRef.update({ xp: firebase.firestore.FieldValue.increment(-50) });
+                        changed = true;
+                    }
+                });
+                if (changed) save();
+            }
+
             function addDeadline() {
                 const topic = topicInput.value.trim();
                 const date = deadlineInput.value;
                 if(topic && date) {
                     const newColor = colorPalette[deadlines.length % colorPalette.length];
-                    deadlines.push({ topic, date, color: newColor });
+                    deadlines.push({ topic, date, color: newColor, completed: false, isDue: false });
                     deadlines.sort((a, b) => new Date(a.date) - new Date(b.date));
                     save();
                 }
@@ -657,6 +793,10 @@
                         li.className = task.completed ? 'completed' : '';
                         li.textContent = task.text;
                         li.onclick = () => toggleTask(subjectIndex, taskIndex);
+                        const focusTime = document.createElement('span');
+                        focusTime.className = 'focus-time';
+                        focusTime.textContent = `${Math.floor((task.focusTime || 0) / 60)}m`;
+                        li.appendChild(focusTime);
                         const deleteBtn = document.createElement('button');
                         deleteBtn.textContent = '✖';
                         deleteBtn.className = 'delete-btn';
@@ -671,7 +811,7 @@
             function addSubject() { const name = prompt('Enter subject name:'); if(name) { subjects.push({ name: name, tasks: [] }); save(); } }
             function deleteTask(subjectIndex, taskIndex) { subjects[subjectIndex].tasks.splice(taskIndex, 1); save(); }
             function toggleTask(subjectIndex, taskIndex) { subjects[subjectIndex].tasks[taskIndex].completed = !subjects[subjectIndex].tasks[taskIndex].completed; save(); }
-            function addTask() { const text = taskInput.value.trim(); const subjectIndex = subjectSelect.value; if(text && subjectIndex !== '') { if(!subjects[subjectIndex].tasks) subjects[subjectIndex].tasks = []; subjects[subjectIndex].tasks.push({ text: text, completed: false }); save(); } }
+            function addTask() { const text = taskInput.value.trim(); const subjectIndex = subjectSelect.value; if(text && subjectIndex !== '') { if(!subjects[subjectIndex].tasks) subjects[subjectIndex].tasks = []; subjects[subjectIndex].tasks.push({ text: text, completed: false, focusTime: 0 }); save(); } }
 
             function renderCalendar() {
                  calendarDays.innerHTML = '';
@@ -687,7 +827,7 @@
                          dayCell.classList.add('current-day');
                      }
                      const dayString = new Date(currentYear, currentMonth, day).toISOString().split('T')[0];
-                     const tasksForDay = deadlines.filter(d => d.date === dayString);
+                     const tasksForDay = deadlines.filter(d => !d.completed && d.date >= dayString);
                      if (tasksForDay.length > 0) {
                          const dotContainer = document.createElement('div');
                          dotContainer.className = 'task-dot-container';
@@ -715,7 +855,7 @@
                     dayColumn.innerHTML = `<div class="week-day-header">${day.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}</div><div class="week-day-tasks"></div>`;
                     const tasksContainer = dayColumn.querySelector('.week-day-tasks');
                     const dayString = day.toISOString().split('T')[0];
-                    const tasksForDay = deadlines.filter(d => d.date === dayString);
+                    const tasksForDay = deadlines.filter(d => !d.completed && d.date >= dayString);
                     tasksForDay.forEach(task => {
                         const taskElement = document.createElement('div');
                         taskElement.className = 'week-task-item';
@@ -738,6 +878,40 @@
                 });
             }
 
+            // --- Notification Logic ---
+            function addNotification(message) {
+                notifications.unshift({ message, read: false, date: new Date().toISOString() });
+                save();
+            }
+
+            function renderNotifications() {
+                notificationBox.innerHTML = '';
+                if (notifications.length === 0) {
+                    notificationBox.innerHTML = '<div class="notification-item">No new notifications</div>';
+                } else {
+                    notifications.forEach(notif => {
+                        const item = document.createElement('div');
+                        item.className = 'notification-item';
+                        item.textContent = notif.message;
+                        notificationBox.appendChild(item);
+                    });
+                }
+                if (notifications.some(n => !n.read)) {
+                    notificationDot.style.display = 'block';
+                } else {
+                    notificationDot.style.display = 'none';
+                }
+            }
+
+            notificationBell.onclick = () => {
+                notificationBox.style.display = notificationBox.style.display === 'block' ? 'none' : 'block';
+                if (notificationBox.style.display === 'block') {
+                    notifications.forEach(n => n.read = true);
+                    save();
+                }
+            };
+
+
             // --- Focus Timer Logic ---
             const focusTaskSelect = document.getElementById('focus-task-select');
             const focusDurationInput = document.getElementById('focus-duration-input');
@@ -752,11 +926,11 @@
 
             function populateFocusTasks() {
                 focusTaskSelect.innerHTML = '<option value="">Select a task to focus on</option>';
-                subjects.forEach(subject => {
-                    (subject.tasks || []).forEach(task => {
+                subjects.forEach((subject, subjectIndex) => {
+                    (subject.tasks || []).forEach((task, taskIndex) => {
                         if (!task.completed) {
                             const option = document.createElement('option');
-                            option.value = task.text;
+                            option.value = `${subjectIndex}-${taskIndex}`;
                             option.textContent = `[${subject.name}] ${task.text}`;
                             focusTaskSelect.appendChild(option);
                         }
@@ -792,7 +966,7 @@
 
                 if (elapsedTime >= totalDuration) {
                     stopTimer();
-                    alert("Focus session complete!");
+                    addNotification("Focus session complete!");
                 }
             }
 
@@ -808,8 +982,7 @@
                     clearInterval(timerInterval);
                     // Set timeout for email notification
                     pauseTimeout = setTimeout(() => {
-                        console.log("SENDING EMAIL: User has been paused for over 10 minutes.");
-                        alert("Reminder: Your focus session is paused. Don't forget to resume or stop it!");
+                        addNotification("Reminder: Your focus session is paused.");
                     }, 10 * 60 * 1000); // 10 minutes
                 }
             }
@@ -817,6 +990,14 @@
             function stopTimer() {
                 clearInterval(timerInterval);
                 clearTimeout(pauseTimeout);
+
+                const [subjectIndex, taskIndex] = focusTaskSelect.value.split('-');
+                if (subjectIndex && taskIndex) {
+                    subjects[subjectIndex].tasks[taskIndex].focusTime = (subjects[subjectIndex].tasks[taskIndex].focusTime || 0) + elapsedTime;
+                    userDocRef.update({ xp: firebase.firestore.FieldValue.increment(Math.floor(elapsedTime / 60)) });
+                    save();
+                }
+
                 timerDisplay.textContent = '00:00';
                 timerProgressCircle.style.strokeDashoffset = circumference;
                 startFocusBtn.style.display = 'inline-block';
@@ -827,6 +1008,33 @@
             startFocusBtn.addEventListener('click', startTimer);
             pauseFocusBtn.addEventListener('click', pauseTimer);
             stopFocusBtn.addEventListener('click', stopTimer);
+
+            // --- Leaderboard Logic ---
+            const leaderboardFilter = document.getElementById('leaderboard-filter');
+            const leaderboardList = document.getElementById('leaderboard-list');
+
+            async function renderLeaderboard() {
+                const usersSnapshot = await db.collection('users').orderBy('xp', 'desc').get();
+                leaderboardList.innerHTML = '';
+                usersSnapshot.docs.forEach((doc, index) => {
+                    const user = doc.data();
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span>${index + 1}. ${user.name}</span><span>${user.xp} XP</span>`;
+                    leaderboardList.appendChild(li);
+                });
+            }
+            
+            leaderboardFilter.onchange = renderLeaderboard;
+            if (document.getElementById('leaderboard-page').classList.contains('active')) {
+                renderLeaderboard();
+            }
+            
+            // --- Settings Logic ---
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            darkModeToggle.onchange = () => {
+                document.body.classList.toggle('dark-mode');
+            };
+
 
             // --- Event Listeners ---
             addDeadlineBtn.addEventListener('click', addDeadline);
