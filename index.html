@@ -166,6 +166,8 @@
         .notification-item { padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 0.9em; }
         .notification-item:last-child { border-bottom: none; }
 
+        #streak-display { font-size: 1.2em; font-weight: bold; }
+
         .page-content {
             padding: 30px;
         }
@@ -238,7 +240,7 @@
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .calendar-grid, .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
         .calendar-weekdays div { font-weight: bold; padding-bottom: 10px; color: #6c757d; }
-        .calendar-grid div { background-color: #f8f9fa; border: 2px solid transparent; border-radius: 8px; aspect-ratio: 1 / 1; position: relative; }
+        .calendar-grid div { background-color: #f8f9fa; border: 2px solid transparent; border-radius: 8px; aspect-ratio: 1 / 1; position: relative; overflow: hidden; }
         .calendar-grid div > span.date-number { position: absolute; top: 5px; right: 7px; font-size: 0.85em; }
         .calendar-grid .current-day { border-color: var(--primary-color); }
         .task-dot-container { position: absolute; bottom: 5px; left: 5px; display: flex; flex-wrap: wrap; gap: 3px; }
@@ -297,7 +299,7 @@
 
         /* --- Leaderboard Styles --- */
         .leaderboard-filters { margin-bottom: 20px; }
-        .leaderboard-list li { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border-color); }
+        .leaderboard-list li { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 10px; border-bottom: 1px solid var(--border-color); }
         
         /* --- Settings Styles --- */
         .setting-item { display: flex; justify-content: space-between; align-items: center; }
@@ -351,6 +353,7 @@
             <header>
                 <h2 id="page-title">Dashboard</h2>
                 <div class="header-icons">
+                    <span id="streak-display"></span>
                     <div id="notification-bell">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                         <div id="notification-dot"></div>
@@ -514,6 +517,7 @@
         const notificationBell = document.getElementById('notification-bell');
         const notificationDot = document.getElementById('notification-dot');
         const notificationBox = document.getElementById('notification-box');
+        const streakDisplay = document.getElementById('streak-display');
 
         // --- Form Switching Logic ---
         document.getElementById('show-signup').addEventListener('click', () => { loginForm.style.display = 'none'; forgotPasswordForm.style.display = 'none'; signupForm.style.display = 'block'; authError.textContent = ''; });
@@ -539,7 +543,9 @@
                            subjects: [],
                            completedDates: [],
                            xp: 0,
-                           notifications: []
+                           notifications: [],
+                           streak: 0,
+                           lastCompletedDate: null
                         });
                     });
                 })
@@ -600,12 +606,48 @@
             profileIcon.textContent = user && user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U';
         }
 
-
-        // --- Profile Page Logic ---
-        // ... (omitted for brevity, no changes here)
-
         // --- Main Application Logic ---
         function initializeAppLogic(user) {
+            // --- Profile Page Logic ---
+            const updateNameForm = document.getElementById('update-name-form');
+            const updateEmailForm = document.getElementById('update-email-form');
+            const updatePasswordForm = document.getElementById('update-password-form');
+            const profileMessage = document.getElementById('profile-message');
+
+            updateNameForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newName = document.getElementById('profile-name').value;
+                
+                user.updateProfile({ displayName: newName }).then(() => {
+                    return db.collection('users').doc(user.uid).update({ name: newName });
+                }).then(() => {
+                    profileMessage.textContent = 'Name updated successfully!';
+                    profileMessage.className = 'success';
+                    updateProfileIcon(user);
+                }).catch(error => {
+                    profileMessage.textContent = `Error: ${error.message}`;
+                    profileMessage.className = 'error';
+                });
+            });
+
+            updateEmailForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert("Updating email requires re-authentication. This feature is a demo.");
+            });
+
+            updatePasswordForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newPassword = document.getElementById('profile-new-password').value;
+                user.updatePassword(newPassword).then(() => {
+                    profileMessage.textContent = 'Password updated successfully!';
+                    profileMessage.className = 'success';
+                    document.getElementById('profile-new-password').value = '';
+                }).catch(error => {
+                    profileMessage.textContent = `Error: ${error.message}. You may need to log out and log back in.`;
+                    profileMessage.className = 'error';
+                });
+            });
+
             document.getElementById('profile-name').value = user.displayName || '';
             document.getElementById('profile-email').value = user.email || '';
             
@@ -628,7 +670,7 @@
             const customColorPicker = document.getElementById('custom-color-picker');
             const calendarLegend = document.getElementById('calendar-legend');
 
-            let deadlines = [], subjects = [], completedDates = [], notifications = [];
+            let deadlines = [], subjects = [], completedDates = [], notifications = [], streak = 0, lastCompletedDate = null;
             const userDocRef = db.collection('users').doc(user.uid);
             const colorPalette = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff'];
 
@@ -639,6 +681,9 @@
                     subjects = data.subjects || [];
                     completedDates = data.completedDates || [];
                     notifications = data.notifications || [];
+                    streak = data.streak || 0;
+                    lastCompletedDate = data.lastCompletedDate || null;
+                    document.getElementById('profile-name').value = data.name || user.displayName;
                 } else {
                     save(); 
                 }
@@ -650,7 +695,7 @@
 
             function save() {
                 userDocRef.set({
-                    name: user.displayName, email: user.email, deadlines, subjects, completedDates, notifications
+                    name: document.getElementById('profile-name').value, email: user.email, deadlines, subjects, completedDates, notifications, streak, lastCompletedDate
                 }, { merge: true }).catch(error => console.error("Error saving to Firestore: ", error));
             }
             
@@ -664,6 +709,7 @@
                 renderCalendarLegend();
                 populateFocusTasks();
                 renderNotifications();
+                renderStreak();
             }
 
             function showColorPicker(event, deadlineIndex) {
@@ -687,49 +733,52 @@
 
             function renderDeadlines() {
                 deadlineList.innerHTML = '';
-                deadlines.filter(d => !d.isDue && !d.completed).forEach((deadline, index) => {
-                    const li = document.createElement('li');
-                    const tick = document.createElement('input');
-                    tick.type = 'checkbox';
-                    tick.className = 'task-tick';
-                    tick.checked = deadline.completed;
-                    tick.onchange = () => toggleDeadlineCompletion(index);
-                    li.appendChild(tick);
+                deadlines.forEach((deadline, index) => {
+                    if (!deadline.isDue && !deadline.completed) {
+                        const li = document.createElement('li');
+                        const tick = document.createElement('input');
+                        tick.type = 'checkbox';
+                        tick.className = 'task-tick';
+                        tick.onchange = () => toggleDeadlineCompletion(index);
+                        li.appendChild(tick);
 
-                    const colorCircle = document.createElement('span');
-                    colorCircle.className = 'deadline-color-circle';
-                    colorCircle.style.backgroundColor = deadline.color || '#ccc';
-                    colorCircle.onclick = (e) => showColorPicker(e, deadlines.findIndex(d => d.topic === deadline.topic));
-                    li.appendChild(colorCircle);
+                        const colorCircle = document.createElement('span');
+                        colorCircle.className = 'deadline-color-circle';
+                        colorCircle.style.backgroundColor = deadline.color || '#ccc';
+                        colorCircle.onclick = (e) => showColorPicker(e, index);
+                        li.appendChild(colorCircle);
 
-                    li.append(` ${deadline.topic} - ${deadline.date}`);
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.textContent = '✖';
-                    deleteBtn.className = 'delete-btn';
-                    deleteBtn.onclick = (e) => { e.stopPropagation(); deleteDeadline(index); };
-                    li.appendChild(deleteBtn);
-                    deadlineList.appendChild(li);
+                        li.append(` ${deadline.topic} - ${deadline.date}`);
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = '✖';
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.onclick = (e) => { e.stopPropagation(); deleteDeadline(index); };
+                        li.appendChild(deleteBtn);
+                        deadlineList.appendChild(li);
+                    }
                 });
             }
 
             function renderDueTasks() {
                 dueTasksList.innerHTML = '';
-                deadlines.filter(d => d.isDue && !d.completed).forEach((deadline, index) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<span>${deadline.topic} (Due: ${deadline.date})</span>`;
-                    const newDateInput = document.createElement('input');
-                    newDateInput.type = 'date';
-                    newDateInput.onchange = (e) => {
-                        deadlines[index].date = e.target.value;
-                        deadlines[index].isDue = false;
-                        save();
-                    };
-                    li.appendChild(newDateInput);
-                    const completeBtn = document.createElement('button');
-                    completeBtn.textContent = '✓';
-                    completeBtn.onclick = () => toggleDeadlineCompletion(index);
-                    li.appendChild(completeBtn);
-                    dueTasksList.appendChild(li);
+                deadlines.forEach((deadline, index) => {
+                    if (deadline.isDue && !deadline.completed) {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span>${deadline.topic} (Due: ${deadline.date})</span>`;
+                        const newDateInput = document.createElement('input');
+                        newDateInput.type = 'date';
+                        newDateInput.onchange = (e) => {
+                            deadlines[index].date = e.target.value;
+                            deadlines[index].isDue = false;
+                            save();
+                        };
+                        li.appendChild(newDateInput);
+                        const completeBtn = document.createElement('button');
+                        completeBtn.textContent = '✓';
+                        completeBtn.onclick = () => toggleDeadlineCompletion(index);
+                        li.appendChild(completeBtn);
+                        dueTasksList.appendChild(li);
+                    }
                 });
             }
 
@@ -741,12 +790,27 @@
                     completedTasksList.appendChild(li);
                 });
             }
+            
+            function updateStreak() {
+                const today = new Date().toISOString().split('T')[0];
+                if (lastCompletedDate === today) return; // Already completed a task today
+
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayString = yesterday.toISOString().split('T')[0];
+
+                if (lastCompletedDate === yesterdayString) {
+                    streak++;
+                } else {
+                    streak = 1;
+                }
+                lastCompletedDate = today;
+            }
 
             function toggleDeadlineCompletion(index) {
-                deadlines[index].completed = !deadlines[index].completed;
-                if (deadlines[index].completed) {
-                    userDocRef.update({ xp: firebase.firestore.FieldValue.increment(50) });
-                }
+                deadlines[index].completed = true;
+                updateStreak();
+                userDocRef.update({ xp: firebase.firestore.FieldValue.increment(50) });
                 save();
             }
 
@@ -763,9 +827,7 @@
                 if (changed) save();
             }
 
-            function addDeadline() {
-                const topic = topicInput.value.trim();
-                const date = deadlineInput.value;
+            function addDeadline(topic, date) {
                 if(topic && date) {
                     const newColor = colorPalette[deadlines.length % colorPalette.length];
                     deadlines.push({ topic, date, color: newColor, completed: false, isDue: false });
@@ -810,7 +872,13 @@
             }
             function addSubject() { const name = prompt('Enter subject name:'); if(name) { subjects.push({ name: name, tasks: [] }); save(); } }
             function deleteTask(subjectIndex, taskIndex) { subjects[subjectIndex].tasks.splice(taskIndex, 1); save(); }
-            function toggleTask(subjectIndex, taskIndex) { subjects[subjectIndex].tasks[taskIndex].completed = !subjects[subjectIndex].tasks[taskIndex].completed; save(); }
+            function toggleTask(subjectIndex, taskIndex) { 
+                subjects[subjectIndex].tasks[taskIndex].completed = !subjects[subjectIndex].tasks[taskIndex].completed; 
+                if (subjects[subjectIndex].tasks[taskIndex].completed) {
+                    updateStreak();
+                }
+                save(); 
+            }
             function addTask() { const text = taskInput.value.trim(); const subjectIndex = subjectSelect.value; if(text && subjectIndex !== '') { if(!subjects[subjectIndex].tasks) subjects[subjectIndex].tasks = []; subjects[subjectIndex].tasks.push({ text: text, completed: false, focusTime: 0 }); save(); } }
 
             function renderCalendar() {
@@ -827,7 +895,7 @@
                          dayCell.classList.add('current-day');
                      }
                      const dayString = new Date(currentYear, currentMonth, day).toISOString().split('T')[0];
-                     const tasksForDay = deadlines.filter(d => !d.completed && d.date >= dayString);
+                     const tasksForDay = deadlines.filter(d => !d.completed && dayString >= new Date().toISOString().split('T')[0].substring(0,10) && dayString <= d.date);
                      if (tasksForDay.length > 0) {
                          const dotContainer = document.createElement('div');
                          dotContainer.className = 'task-dot-container';
@@ -855,7 +923,7 @@
                     dayColumn.innerHTML = `<div class="week-day-header">${day.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}</div><div class="week-day-tasks"></div>`;
                     const tasksContainer = dayColumn.querySelector('.week-day-tasks');
                     const dayString = day.toISOString().split('T')[0];
-                    const tasksForDay = deadlines.filter(d => !d.completed && d.date >= dayString);
+                    const tasksForDay = deadlines.filter(d => !d.completed && dayString >= new Date().toISOString().split('T')[0].substring(0,10) && dayString <= d.date);
                     tasksForDay.forEach(task => {
                         const taskElement = document.createElement('div');
                         taskElement.className = 'week-task-item';
@@ -876,6 +944,10 @@
                     legendItem.innerHTML = `<div class="legend-color-box" style="background-color: ${task.color || '#ccc'}"></div><span>${task.topic}</span>`;
                     calendarLegend.appendChild(legendItem);
                 });
+            }
+            
+            function renderStreak() {
+                streakDisplay.textContent = `🔥 ${streak}`;
             }
 
             // --- Notification Logic ---
@@ -1019,7 +1091,7 @@
                 usersSnapshot.docs.forEach((doc, index) => {
                     const user = doc.data();
                     const li = document.createElement('li');
-                    li.innerHTML = `<span>${index + 1}. ${user.name}</span><span>${user.xp} XP</span>`;
+                    li.innerHTML = `<span>${index + 1}. ${user.name}</span><span>${user.xp} XP</span><span>🔥 ${user.streak || 0}</span>`;
                     leaderboardList.appendChild(li);
                 });
             }
@@ -1035,9 +1107,32 @@
                 document.body.classList.toggle('dark-mode');
             };
 
-
             // --- Event Listeners ---
-            addDeadlineBtn.addEventListener('click', addDeadline);
+            document.getElementById('add-today-btn').addEventListener('click', () => {
+                const topic = topicInput.value.trim();
+                const date = new Date().toISOString().split('T')[0];
+                addDeadline(topic, date);
+            });
+            document.getElementById('add-tomorrow-btn').addEventListener('click', () => {
+                const topic = topicInput.value.trim();
+                const date = new Date();
+                date.setDate(date.getDate() + 1);
+                addDeadline(topic, date.toISOString().split('T')[0]);
+            });
+            document.getElementById('add-week-btn').addEventListener('click', () => {
+                const topic = topicInput.value.trim();
+                const date = new Date();
+                date.setDate(date.getDate() + 7);
+                addDeadline(topic, date.toISOString().split('T')[0]);
+            });
+            document.getElementById('add-month-btn').addEventListener('click', () => {
+                const topic = topicInput.value.trim();
+                const date = new Date();
+                date.setMonth(date.getMonth() + 1);
+                addDeadline(topic, date.toISOString().split('T')[0]);
+            });
+
+            addDeadlineBtn.addEventListener('click', () => addDeadline(topicInput.value.trim(), deadlineInput.value));
             addSubjectBtn.addEventListener('click', addSubject);
             addTaskBtn.addEventListener('click', addTask);
             prevMonthBtn.addEventListener('click', () => changeMonth(-1));
