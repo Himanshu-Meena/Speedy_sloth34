@@ -873,9 +873,11 @@
             function addSubject() { const name = prompt('Enter subject name:'); if(name) { subjects.push({ name: name, tasks: [] }); save(); } }
             function deleteTask(subjectIndex, taskIndex) { subjects[subjectIndex].tasks.splice(taskIndex, 1); save(); }
             function toggleTask(subjectIndex, taskIndex) { 
-                subjects[subjectIndex].tasks[taskIndex].completed = !subjects[subjectIndex].tasks[taskIndex].completed; 
-                if (subjects[subjectIndex].tasks[taskIndex].completed) {
+                const task = subjects[subjectIndex].tasks[taskIndex];
+                task.completed = !task.completed;
+                if (task.completed) {
                     updateStreak();
+                    userDocRef.update({ xp: firebase.firestore.FieldValue.increment(50) });
                 }
                 save(); 
             }
